@@ -48,28 +48,34 @@ flowchart LR
 
 ### Tasks
 **Repo and tooling**
-- [ ] `git init`, add `.gitignore` (`node_modules`, `.next`, `data/`, `models/`, `*.db`, `.venv`), and make the first commit of the Exp 9 state.
-- [ ] Move the Next.js app from the repo root into `web/`. Fix the paths in `README.md` and `testing/`.
-- [ ] Set the web dev port to 3001 (`next dev -p 3001`).
-- [ ] Create `backend/` with FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, pytest, ruff. Pin versions (`pyproject.toml` or `requirements.txt`).
-- [ ] Add a CI workflow (GitHub Actions) that runs ruff + pytest for the backend and type-check + build for the web app, on Ubuntu and Windows.
+- [x] `git init`, add `.gitignore` (`node_modules`, `.next`, `data/`, `models/`, `*.db`, `.venv`), and make the first commit of the Exp 9 state.
+- [x] Move the Next.js app from the repo root into `web/`. Fix the paths in `README.md` and `testing/`.
+- [x] Set the web dev port to 3001 (`next dev -p 3001`).
+- [x] Create `backend/` with FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, pytest, ruff. Pin versions (`pyproject.toml` or `requirements.txt`).
+- [x] Add a CI workflow (GitHub Actions) that runs ruff + pytest for the backend and type-check + build for the web app, on Ubuntu and Windows.
 
 **Data model**
-- [ ] Write the SQLAlchemy models for all 9 ER entities, plus the child tables SATELLITE_MISSION_TAG and USER_CONTACT_EMAIL, with the additions listed in ARCHITECTURE.md §4.1.
-- [ ] Create the first Alembic migration. Turn on SQLite WAL mode.
-- [ ] Write a seed script: 3 users (one per role), the SMAP satellite, and a default MONITORING_CONFIG.
+- [x] Write the SQLAlchemy models for all 9 ER entities, plus the child tables SATELLITE_MISSION_TAG and USER_CONTACT_EMAIL, with the additions listed in ARCHITECTURE.md §4.1.
+- [x] Create the first Alembic migration. Turn on SQLite WAL mode.
+- [x] Write a seed script: 3 users (one per role), the SMAP satellite, and a default MONITORING_CONFIG.
 
 **API skeleton**
-- [ ] Port the three Exp 9 endpoints (`POST /api/login`, `GET /api/alerts`, `POST /api/alerts/{id}/acknowledge`) to FastAPI with the **same response shapes**, backed by the database.
-- [ ] Add password hashing (argon2/bcrypt), a signed httpOnly session cookie, and `GET /api/me`.
-- [ ] Add Next.js rewrites `/api/*` → `http://localhost:8000/api/*`. Delete the mock `lib/store.ts` and the API routes from the web app.
+- [x] Port the three Exp 9 endpoints (`POST /api/login`, `GET /api/alerts`, `POST /api/alerts/{id}/acknowledge`) to FastAPI with the **same response shapes**, backed by the database.
+- [x] Add password hashing (argon2/bcrypt), a signed httpOnly session cookie, and `GET /api/me`.
+- [x] Add Next.js rewrites `/api/*` → `http://localhost:8000/api/*`. Delete the mock `lib/store.ts` and the API routes from the web app.
 
 **Dataset access**
-- [ ] Write `scripts/get_data.(sh|ps1)` to download the Telemanom `data.zip` and `labeled_anomalies.csv` into `data/`.
-- [ ] Write a small loader that lists the channels, the train/test shapes, and the labelled anomaly ranges. Sanity-check that the channel count and anomaly count match the paper.
+- [x] Write `scripts/get_data.(sh|ps1)` to download the Telemanom `data.zip` and `labeled_anomalies.csv` into `data/`.
+- [x] Write a small loader that lists the channels, the train/test shapes, and the labelled anomaly ranges. Sanity-check that the channel count and anomaly count match the paper.
 
 ### Deliverables
 Monorepo layout, database schema + migration, FastAPI serving the Exp 9 endpoints, CI green, dataset on disk.
+
+### Status — done (2026-10-05)
+- Verified: 22 backend tests pass, lint clean, web type-check and build pass, login → alerts → acknowledge → logout work end to end through port 3001 against SQLite, and the Exp 9 JMeter plan ran 1,500 requests with 0 errors.
+- Not yet verified: the CI workflow has not run (nothing has been pushed), and the Selenium IDE suite needs a manual rerun on port 3001.
+- Changes from the plan: the dataset comes from the Kaggle mirror (the original S3 link is closed). Acknowledge sets `Acknowledged`; the `Resolved` step arrives with the episode logic in Phase 3. The API endpoints now require login, so the session cookie is httpOnly and the web app treats a 401 response as "not logged in" instead of reading the cookie.
+- Dataset facts: 82 channel files, 81 labelled (54 SMAP, 27 MSL), 104 anomaly sequences after merging the duplicate `P-2` row; `T-10` has no labels.
 
 ### Exit criteria
 - `npm run dev` (web, port 3001) + `uvicorn` (API, port 8000): login and acknowledge work end to end against SQLite.

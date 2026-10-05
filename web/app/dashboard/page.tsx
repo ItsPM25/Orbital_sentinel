@@ -4,22 +4,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { AlertView } from "@/lib/entities";
 
-function hasSession() {
-  return document.cookie.split("; ").some((c) => c.startsWith("os_session="));
-}
-
 export default function DashboardPage() {
   const router = useRouter();
   const [alerts, setAlerts] = useState<AlertView[] | null>(null);
 
   useEffect(() => {
-    if (!hasSession()) {
-      router.replace("/login");
-      return;
-    }
-    fetch("/api/alerts", { cache: "no-store" })
-      .then((r) => r.json())
-      .then(setAlerts);
+    fetch("/api/alerts", { cache: "no-store" }).then(async (res) => {
+      // 401 means there is no valid session.
+      if (!res.ok) {
+        router.replace("/login");
+        return;
+      }
+      setAlerts(await res.json());
+    });
   }, [router]);
 
   async function acknowledge(alertId: string) {
@@ -29,8 +26,8 @@ export default function DashboardPage() {
     setAlerts((prev) => prev && prev.map((a) => (a.alertId === alertId ? updated : a)));
   }
 
-  function logout() {
-    document.cookie = "os_session=; Max-Age=0; path=/";
+  async function logout() {
+    await fetch("/api/logout", { method: "POST" });
     router.replace("/login");
   }
 
@@ -65,7 +62,7 @@ export default function DashboardPage() {
               <td className="createdAt">{a.createdAt}</td>
               <td className="status" id={`status-${a.alertId}`}>{a.status}</td>
               <td>
-                <button id={`ack-${a.alertId}`} disabled={a.status === "Acknowledged"} onClick={() => acknowledge(a.alertId)}>
+                <button id={`ack-${a.alertId}`} disabled={a.status !== "AlertRaised"} onClick={() => acknowledge(a.alertId)}>
                   Acknowledge
                 </button>
               </td>

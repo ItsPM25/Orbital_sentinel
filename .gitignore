@@ -23,3 +23,6 @@ models/
 *.jtl
 jmeter-report/
 jmeter.log
+
+# TypeScript incremental build cache
+*.tsbuildinfo

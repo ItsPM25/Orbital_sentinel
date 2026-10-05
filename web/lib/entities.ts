@@ -2,7 +2,7 @@
 // detection-lifecycle state diagram (Experiment 5). ER attribute names are
 // kept, converted from snake_case to camelCase.
 
-export type AlertStatus = "AlertRaised" | "Acknowledged"; // states from the state diagram
+export type AlertStatus = "AlertRaised" | "Acknowledged" | "Resolved"; // states from the state diagram
 export type SeverityLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
 export interface Satellite {
