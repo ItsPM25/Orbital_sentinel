@@ -1,0 +1,5 @@
+# ML dependencies, installed into the backend virtual environment on top of backend/requirements.txt.
+# CPU build of PyTorch:  pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1
+scikit-learn==1.9.1
+pandas==3.0.6

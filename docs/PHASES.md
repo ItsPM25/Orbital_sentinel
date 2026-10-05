@@ -89,17 +89,24 @@ Monorepo layout, database schema + migration, FastAPI serving the Exp 9 endpoint
 **Goal:** settle the project's single technical unknown, *which detector configuration works best on SMAP/MSL*, before committing the design. The spike code is **throwaway**. Only the decision and the chosen settings move on.
 
 ### Tasks
-- [ ] Pick a representative slice: about 10–15 channels from both SMAP and MSL, covering point and contextual anomalies, including the channels you plan to map to satellites.
-- [ ] Shared harness (in `ml/spike/`): one shared normalisation, one windowing scheme, and one evaluator (event-level precision/recall/F1 with the overlap rule, plus window-level FPR).
-- [ ] **Candidate A:** Telemanom-style LSTM predictor + EWMA smoothing + non-parametric dynamic threshold (the SRS baseline).
-- [ ] **Candidate B:** LSTM autoencoder (reconstruction error) + a static percentile threshold.
-- [ ] **Floor:** a rolling z-score or Isolation Forest, to prove the LSTMs earn their complexity.
-- [ ] Sweep the key hyperparameters (history length `l_s`, hidden size, smoothing window, threshold percentile). Record CPU training time per channel.
-- [ ] **TBD-3:** on the winning model, compare *error-ranking attribution* with a *SHAP-style* attribution on a few labelled multi-channel anomalies. Choose one, weighing faithfulness against cost.
-- [ ] Write `docs/adr/001-detector-choice.md` and `docs/adr/002-attribution-method.md`, with results tables and the go/no-go decision.
+- [x] Pick a representative slice: about 10–15 channels from both SMAP and MSL, covering point and contextual anomalies, including the channels you plan to map to satellites.
+- [x] Shared harness (in `ml/spike/`): one shared normalisation, one windowing scheme, and one evaluator (event-level precision/recall/F1 with the overlap rule, plus window-level FPR).
+- [x] **Candidate A:** Telemanom-style LSTM predictor + EWMA smoothing + non-parametric dynamic threshold (the SRS baseline).
+- [x] **Candidate B:** LSTM autoencoder (reconstruction error) + a static percentile threshold.
+- [x] **Floor:** a rolling z-score or Isolation Forest, to prove the LSTMs earn their complexity.
+- [x] Sweep the key hyperparameters (history length `l_s`, hidden size, smoothing window, threshold percentile). Record CPU training time per channel.
+- [x] **TBD-3:** on the winning model, compare *error-ranking attribution* with a *SHAP-style* attribution on a few labelled multi-channel anomalies. Choose one, weighing faithfulness against cost.
+- [x] Write `docs/adr/001-detector-choice.md` and `docs/adr/002-attribution-method.md`, with results tables and the go/no-go decision.
 
 ### Deliverables
 Two ADRs, a results table (per-candidate P/R/F1/FPR and training time), and frozen starting hyperparameters for Phase 2.
+
+### Status — done (2026-10-05)
+- **Decision: go.** Per-channel LSTM predictor (100 steps of history, 2 × 80 units) with the paper's dynamic threshold. On 12 held-out channels: precision 0.94, recall 0.68, F1 0.79, 3.0% of normal points flagged, about 36 s of CPU training per channel. Best autoencoder: F1 0.65. Best floor: F1 0.51.
+- **TBD-3 closed:** attribution by error ranking, which named the faulty channel for 15 of 17 anomalies (SHAP-style: 7 of 17).
+- **Carry forward:** the F1 above is optimistic, because the final variant was chosen using the held-out channels (the 4 tuning channels turned out too few to choose on). Phase 2 re-measures on all 81 labelled channels. The EWMA span is re-tuned in Phase 3.
+- Changes from the plan: 16 channels (4 tuning + 12 held-out) instead of 10–15; scripts instead of notebooks; no hidden-size sweep beyond 40/80.
+- Records: [ADR 001](adr/001-detector-choice.md), [ADR 002](adr/002-attribution-method.md), [results tables](results/phase1_spike.md).
 
 ### Exit criteria
 - A **go** decision: the chosen detector beats the floor on F1 on the slice, and training the monitored channels on CPU fits overnight.

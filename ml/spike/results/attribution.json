@@ -1,0 +1,101 @@
+[
+ {
+  "group": "SMAP-1",
+  "channels": [
+   "S-1",
+   "E-1",
+   "A-2",
+   "F-1"
+  ],
+  "points": 140,
+  "events": 5,
+  "error-rank": {
+   "point_hit_rate": 0.607,
+   "event_hit_rate": 1.0,
+   "events_scored": 4
+  },
+  "joint-recon": {
+   "point_hit_rate": 0.2,
+   "event_hit_rate": 0.0,
+   "events_scored": 4
+  },
+  "joint-shap": {
+   "point_hit_rate": 0.15,
+   "event_hit_rate": 0.0,
+   "events_scored": 4
+  },
+  "cost": {
+   "error-rank_extra_ms_per_window": 0.0,
+   "error-rank_setup_s": 0.03,
+   "joint_model_train_s": 23.4,
+   "joint-recon_ms_per_window": 0.235,
+   "joint-shap_ms_per_window": 3.082
+  }
+ },
+ {
+  "group": "SMAP-2",
+  "channels": [
+   "G-7",
+   "T-1",
+   "P-4",
+   "P-1"
+  ],
+  "points": 377,
+  "events": 11,
+  "error-rank": {
+   "point_hit_rate": 0.509,
+   "event_hit_rate": 0.875,
+   "events_scored": 8
+  },
+  "joint-recon": {
+   "point_hit_rate": 0.297,
+   "event_hit_rate": 0.375,
+   "events_scored": 8
+  },
+  "joint-shap": {
+   "point_hit_rate": 0.268,
+   "event_hit_rate": 0.5,
+   "events_scored": 8
+  },
+  "cost": {
+   "error-rank_extra_ms_per_window": 0.0,
+   "error-rank_setup_s": 0.02,
+   "joint_model_train_s": 14.8,
+   "joint-recon_ms_per_window": 0.157,
+   "joint-shap_ms_per_window": 2.524
+  }
+ },
+ {
+  "group": "MSL-1",
+  "channels": [
+   "F-7",
+   "P-10",
+   "D-14",
+   "T-13"
+  ],
+  "points": 97,
+  "events": 5,
+  "error-rank": {
+   "point_hit_rate": 0.649,
+   "event_hit_rate": 0.8,
+   "events_scored": 5
+  },
+  "joint-recon": {
+   "point_hit_rate": 0.474,
+   "event_hit_rate": 0.6,
+   "events_scored": 5
+  },
+  "joint-shap": {
+   "point_hit_rate": 0.722,
+   "event_hit_rate": 0.6,
+   "events_scored": 5
+  },
+  "cost": {
+   "error-rank_extra_ms_per_window": 0.0,
+   "error-rank_setup_s": 0.02,
+   "joint_model_train_s": 2.4,
+   "joint-recon_ms_per_window": 0.21,
+   "joint-shap_ms_per_window": 3.177
+  }
+ }
+]

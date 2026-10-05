@@ -224,7 +224,7 @@ class Explainer(Protocol):           # 3.0
 ### 5.2 Process 2.0 — Detect (REQ-3, REQ-4, REQ-5)
 
 - **Baseline (REQ-3):** a Telemanom-style **LSTM predictor per channel** (Hundman et al., 2018). It predicts the next values from the history window; the prediction error is smoothed (EWMA) and compared against a **non-parametric dynamic threshold**.
-  - Starting hyperparameters from the paper and reference repo: `l_s = 250`, 10-step prediction horizon, 2 LSTM layers × 80 units, dropout 0.3. They are tuned in Phase 1.
+  - Settings chosen by the Phase 1 spike ([ADR 001](adr/001-detector-choice.md)): 100 steps of history (the paper uses 250), 10-step prediction horizon, 2 LSTM layers × 80 units, dropout 0.3, EWMA span 105. The threshold decides in batches of 70 points over the previous 2,100.
 - **Channel score:** the channel's smoothed error divided by its dynamic threshold, so `score > 1` means anomalous.
 - **Satellite score:** the maximum channel score across the satellite's channels. It is stored as `DETECTION.anomaly_score`, and `DETECTION_MODEL.threshold` holds the global decision threshold (REQ-4).
 - **Evaluation (REQ-5):** the evaluator compares predicted anomaly ranges with labelled ranges and reports precision, recall, F1 and false-positive rate. It uses the paper's convention: a labelled sequence counts as detected if any predicted range overlaps it. It also reports window-level FPR for REQ-11.
@@ -236,7 +236,7 @@ This follows the Level-2 DFD order exactly:
 
 | Sub-process | Logic | Writes |
 |---|---|---|
-| **3.1 Attribute to channel** (REQ-7) | Rank the satellite's channels by their share of the anomaly: `contribution = channel_score / Σ channel_scores` over the channels above threshold. The top contributors become ATTRIBUTION rows. If no channel stands out, record `unknown` (Exp 5 assumption 6). The method is **error-ranking by default**; whether SHAP-style attribution is worth adding is decided in the spike (TBD-3). | ATTRIBUTION |
+| **3.1 Attribute to channel** (REQ-7) | Rank the satellite's channels by their share of the anomaly: `contribution = channel_score / Σ channel_scores` over the channels above threshold. The top contributors become ATTRIBUTION rows. If no channel stands out, record `unknown` (Exp 5 assumption 6). The method is **error-ranking**, chosen in the spike ([ADR 002](adr/002-attribution-method.md), TBD-3 closed). | ATTRIBUTION |
 | **3.2 Persistence filter** (REQ-8) | Count consecutive anomalous windows per satellite. If the count is below N (`MONITORING_CONFIG.persistence_threshold`), the window is `Suppressed` and logged as a false alarm. Otherwise it is `Confirmed`. | DETECTION (outcome) |
 | **3.3 Severity score** (REQ-9) | `severity_index = norm(score) × g(persistence_count)` is mapped to LOW / MEDIUM / HIGH / CRITICAL using `severity_threshold` bands, and to `risk_level` 1–10. The exact formula is tuned in Phase 3 (TBD-1). | DETECTION.severity_level, ALERT.risk_level |
 | **3.4 Risk ranking** (REQ-10) | Satellites are ordered by current severity, then risk_level, then most recent detection. The ranking is pushed over SSE. | (derived) |

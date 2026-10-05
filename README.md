@@ -4,7 +4,7 @@ Early-warning health monitoring for satellite fleets: telemetry anomaly detectio
 
 > **What this is.** A proof of concept for decision support. It **detects anomalies** as they unfold; it does not forecast failures. Health telemetry is a **historical replay** of NASA's public SMAP/MSL dataset; only orbital positions are live. It must not be used as the basis for real spacecraft operations.
 
-**Status:** Phase 0 (foundation) is done. See [docs/PHASES.md](docs/PHASES.md) for the plan and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
+**Status:** Phases 0 (foundation) and 1 (detector choice) are done; the detection pipeline itself (Phase 2) is next. See [docs/PHASES.md](docs/PHASES.md) for the plan and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
 
 ## Layout
 
