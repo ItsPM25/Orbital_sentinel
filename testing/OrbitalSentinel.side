@@ -1,0 +1,110 @@
+{
+  "id": "0f6b1c1e-9a1d-4c1e-8b61-0a5e5e000001",
+  "version": "2.0",
+  "name": "Orbital Sentinel",
+  "url": "http://localhost:3000",
+  "tests": [
+    {
+      "id": "tc01",
+      "name": "TC01 Valid login opens dashboard",
+      "commands": [
+        { "id": "tc01-01", "comment": "Reset mock data", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc01-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc01-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc01-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc01-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc01-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc01-07", "comment": "", "command": "waitForElementVisible", "target": "id=alertTable", "targets": [], "value": "10000" },
+        { "id": "tc01-08", "comment": "", "command": "assertText", "target": "id=dashboardTitle", "targets": [], "value": "Orbital Sentinel - Alert Dashboard" }
+      ]
+    },
+    {
+      "id": "tc02",
+      "name": "TC02 Invalid password shows error",
+      "commands": [
+        { "id": "tc02-01", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc02-02", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc02-03", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc02-04", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "wrongpass" },
+        { "id": "tc02-05", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc02-06", "comment": "", "command": "waitForElementVisible", "target": "id=loginError", "targets": [], "value": "10000" },
+        { "id": "tc02-07", "comment": "", "command": "assertText", "target": "id=loginError", "targets": [], "value": "Invalid email or password" },
+        { "id": "tc02-08", "comment": "Still on login page", "command": "assertElementPresent", "target": "id=loginBtn", "targets": [], "value": "" }
+      ]
+    },
+    {
+      "id": "tc03",
+      "name": "TC03 Empty fields show validation error",
+      "commands": [
+        { "id": "tc03-01", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc03-02", "comment": "", "command": "waitForElementVisible", "target": "id=loginBtn", "targets": [], "value": "10000" },
+        { "id": "tc03-03", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc03-04", "comment": "", "command": "waitForElementVisible", "target": "id=loginError", "targets": [], "value": "10000" },
+        { "id": "tc03-05", "comment": "", "command": "assertText", "target": "id=loginError", "targets": [], "value": "Email and password are required" }
+      ]
+    },
+    {
+      "id": "tc04",
+      "name": "TC04 Dashboard shows risk-ranked alert list",
+      "commands": [
+        { "id": "tc04-01", "comment": "Reset mock data", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc04-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc04-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc04-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc04-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc04-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc04-07", "comment": "", "command": "waitForElementVisible", "target": "id=alertTable", "targets": [], "value": "10000" },
+        { "id": "tc04-08", "comment": "", "command": "assertText", "target": "id=alertCount", "targets": [], "value": "8 alerts" },
+        { "id": "tc04-09", "comment": "Highest risk first", "command": "assertText", "target": "css=#alertTable tbody tr:nth-child(1) .alertId", "targets": [], "value": "ALT-001" },
+        { "id": "tc04-10", "comment": "", "command": "assertText", "target": "css=#alertTable tbody tr:nth-child(1) .riskLevel", "targets": [], "value": "10 (CRITICAL)" },
+        { "id": "tc04-11", "comment": "Lowest risk last", "command": "assertText", "target": "css=#alertTable tbody tr:nth-child(8) .alertId", "targets": [], "value": "ALT-005" }
+      ]
+    },
+    {
+      "id": "tc05",
+      "name": "TC05 Acknowledge alert updates status",
+      "commands": [
+        { "id": "tc05-01", "comment": "Reset mock data", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc05-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc05-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc05-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc05-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc05-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc05-07", "comment": "", "command": "waitForElementVisible", "target": "id=ack-ALT-001", "targets": [], "value": "10000" },
+        { "id": "tc05-08", "comment": "", "command": "assertText", "target": "id=status-ALT-001", "targets": [], "value": "AlertRaised" },
+        { "id": "tc05-09", "comment": "", "command": "click", "target": "id=ack-ALT-001", "targets": [], "value": "" },
+        { "id": "tc05-10", "comment": "Button becomes disabled", "command": "waitForElementPresent", "target": "css=#ack-ALT-001:disabled", "targets": [], "value": "10000" },
+        { "id": "tc05-11", "comment": "", "command": "assertText", "target": "id=status-ALT-001", "targets": [], "value": "Acknowledged" }
+      ]
+    },
+    {
+      "id": "tc06",
+      "name": "TC06 Logout and dashboard access control",
+      "commands": [
+        { "id": "tc06-01", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc06-02", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc06-03", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc06-04", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc06-05", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc06-06", "comment": "", "command": "waitForElementVisible", "target": "id=logoutBtn", "targets": [], "value": "10000" },
+        { "id": "tc06-07", "comment": "", "command": "click", "target": "id=logoutBtn", "targets": [], "value": "" },
+        { "id": "tc06-08", "comment": "Back on login page", "command": "waitForElementVisible", "target": "id=loginBtn", "targets": [], "value": "10000" },
+        { "id": "tc06-09", "comment": "Direct access without session", "command": "open", "target": "/dashboard", "targets": [], "value": "" },
+        { "id": "tc06-10", "comment": "Redirected to login", "command": "waitForElementVisible", "target": "id=loginBtn", "targets": [], "value": "10000" },
+        { "id": "tc06-11", "comment": "", "command": "assertElementNotPresent", "target": "id=alertTable", "targets": [], "value": "" }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "suite-1",
+      "name": "Orbital Sentinel Functional Suite",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 300,
+      "tests": ["tc01", "tc02", "tc03", "tc04", "tc05", "tc06"]
+    }
+  ],
+  "urls": ["http://localhost:3000/"],
+  "plugins": []
+}

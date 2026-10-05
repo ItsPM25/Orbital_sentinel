@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Experiment 9 - Software Testing - Pushkar Kumar Mishra</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  body { font-family: "Calibri", "Segoe UI", Arial, sans-serif; font-size: 11pt; line-height: 1.45; color: #111; }
+  h1 { font-size: 17pt; margin: 0 0 4px; }
+  h2 { font-size: 13.5pt; margin: 20px 0 6px; border-bottom: 1.5px solid #333; padding-bottom: 2px; }
+  h3 { font-size: 11.5pt; margin: 14px 0 4px; }
+  .sub { font-size: 12pt; margin: 0 0 12px; color: #333; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.5pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 1px solid #555; padding: 4px 6px; vertical-align: top; text-align: left; }
+  th { background: #e6e6e6; }
+  td.num, th.num { text-align: right; }
+  .meta td:first-child { width: 32%; font-weight: bold; background: #f3f3f3; }
+  .meta { font-size: 10.5pt; }
+  figure { margin: 10px 0 14px; page-break-inside: avoid; text-align: center; }
+  figure img { width: 100%; border: 1px solid #888; }
+  figcaption { font-size: 9.5pt; font-style: italic; margin-top: 4px; }
+  .pass { color: #0a6b1f; font-weight: bold; }
+  .ne { color: #8a5a00; font-weight: bold; }
+  .note { font-size: 9.5pt; color: #333; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; }
+  .pb { page-break-before: always; }
+  ul { margin: 4px 0 8px; }
+</style>
+</head>
+<body>
+
+<h1>Experiment 9 &mdash; Software Testing: Functional and Non-Functional Testing</h1>
+<p class="sub">Software Engineering Laboratory</p>
+
+<table class="meta">
+  <tr><td>Name</td><td>Pushkar Kumar Mishra</td></tr>
+  <tr><td>Register Number</td><td>24BPS1128</td></tr>
+  <tr><td>Course</td><td>Software Engineering Lab</td></tr>
+  <tr><td>Date</td><td>23rd Sept, 2026</td></tr>
+  <tr><td>Application under test</td><td>Orbital Sentinel &mdash; Satellite Telemetry Anomaly Detection System (test build)</td></tr>
+  <tr><td>Tools used</td><td>Selenium IDE (functional testing), Apache JMeter 5.6.3 (load / performance testing)</td></tr>
+</table>
+
+<h2>1. Aim</h2>
+<p>To design test cases for a web application and execute them using Selenium IDE (functional testing), and to perform a basic load/performance test using Apache JMeter, recording response time and throughput (non-functional testing).</p>
+
+<h2>2. Application Under Test</h2>
+<p>Orbital Sentinel is an early-warning health-monitoring system for satellite fleets (see the SRS and the earlier ER and state-transition experiments). For this experiment, a minimal working build of the system was developed to cover the operator's alert workflow:</p>
+<ul>
+  <li><b>Login page</b> &mdash; email/password login for the Analyst (Operator) user.</li>
+  <li><b>Alert dashboard</b> &mdash; a risk-ordered alert list (SRS REQ-16) showing Alert ID, Satellite, Risk Level, Severity, Created At and Status.</li>
+  <li><b>Acknowledge alert</b> &mdash; moves an alert from <i>AlertRaised</i> to <i>Acknowledged</i>, as in the state transition diagram (Experiment 5).</li>
+  <li><b>REST API</b> &mdash; <code>POST /api/login</code>, <code>GET /api/alerts</code>, <code>POST /api/alerts/:id/acknowledge</code>.</li>
+</ul>
+<p>The data model uses the entities from the ER diagram (Experiment 4): <b>Satellite</b>, <b>Detection</b>, <b>Alert</b> and <b>User</b>. The data is mock data held in memory: 5 satellites, 8 detections and 8 alerts.</p>
+
+<h3>Test Environment</h3>
+<table>
+  <tr><th>Item</th><th>Details</th></tr>
+  <tr><td>Operating system</td><td>Windows 11 Home</td></tr>
+  <tr><td>Application stack</td><td>Next.js 15 + React 19 (TypeScript), Node.js 22; production build (<code>npm run build</code> + <code>npm start</code>)</td></tr>
+  <tr><td>Application URL</td><td>http://localhost:3000</td></tr>
+  <tr><td>Functional testing tool</td><td>Selenium IDE (desktop application)</td></tr>
+  <tr><td>Performance testing tool</td><td>Apache JMeter 5.6.3 on Java 21 (Eclipse Temurin)</td></tr>
+  <tr><td>Test user</td><td>analyst@orbitalsentinel.test / sentinel123 (role: Analyst)</td></tr>
+</table>
+
+<h2>3. Task 1 &mdash; Functional Testing using Selenium IDE</h2>
+
+<h3>3.1 Test Case Table</h3>
+<table>
+  <tr><th>TC ID</th><th>Module</th><th>Test Description</th><th>Test Steps</th><th>Test Data</th><th>Expected Result</th><th>Actual Result</th><th>Status</th></tr>
+  <tr><td>TC01</td><td>Login</td><td>Valid login opens the dashboard</td><td>1. Open /login<br>2. Enter email and password<br>3. Click Login</td><td>analyst@orbitalsentinel.test / sentinel123</td><td>User is taken to /dashboard; the alert table and the title "Orbital Sentinel - Alert Dashboard" are shown</td><td>Login succeeded and the dashboard with the alert table was displayed</td><td class="pass">Pass</td></tr>
+  <tr><td>TC02</td><td>Login</td><td>Invalid password is rejected</td><td>1. Open /login<br>2. Enter a valid email and a wrong password<br>3. Click Login</td><td>analyst@orbitalsentinel.test / wrongpass</td><td>Error "Invalid email or password" is shown; user stays on /login</td><td>Error "Invalid email or password" was displayed; the Login button was still present</td><td class="pass">Pass</td></tr>
+  <tr><td>TC03</td><td>Login</td><td>Empty fields are validated</td><td>1. Open /login<br>2. Click Login with both fields empty</td><td>(blank)</td><td>Error "Email and password are required" is shown</td><td>Not executed (see 3.3)</td><td class="ne">Not executed</td></tr>
+  <tr><td>TC04</td><td>Dashboard</td><td>Alerts are listed in risk order (REQ-16)</td><td>1. Log in<br>2. Check the alert table</td><td>8 mock alerts</td><td>"8 alerts" shown; row 1 is ALT-001, risk "10 (CRITICAL)"; last row is ALT-005</td><td>Not executed as a separate script (see 3.3)</td><td class="ne">Not executed</td></tr>
+  <tr><td>TC05</td><td>Alert</td><td>Acknowledging an alert updates its status</td><td>1. Log in<br>2. Click Acknowledge on ALT-001</td><td>ALT-001</td><td>Status changes from AlertRaised to Acknowledged; the Acknowledge button becomes disabled</td><td>ALT-001 status changed to Acknowledged and its button was disabled; the other alerts stayed AlertRaised</td><td class="pass">Pass</td></tr>
+  <tr><td>TC06</td><td>Session</td><td>Logout, then direct dashboard access is blocked</td><td>1. Log in<br>2. Click Logout<br>3. Open /dashboard directly</td><td>&mdash;</td><td>Login page is shown after logout; /dashboard redirects to /login</td><td>Not executed (see 3.3)</td><td class="ne">Not executed</td></tr>
+</table>
+
+<h3>3.2 Test Execution Screenshots</h3>
+
+<figure>
+  <img src="img/selenium_tc02.png" alt="TC02 execution">
+  <figcaption>Figure 1: TC02 &mdash; invalid password. Selenium IDE shows the executed commands (Type, Click, Wait For Element Visible, Assert Text, Assert Element Present), and the browser shows the "Invalid email or password" message.</figcaption>
+</figure>
+
+<figure>
+  <img src="img/selenium_tc05.png" alt="TC05 execution">
+  <figcaption>Figure 2: TC05 &mdash; acknowledge alert. The assertions confirm ALT-001 changed from AlertRaised to Acknowledged. The dashboard shows ALT-001 acknowledged (button disabled) while the other alerts stay AlertRaised, listed in risk order.</figcaption>
+</figure>
+
+<figure>
+  <img src="img/selenium_suite.png" alt="Selenium IDE test suite">
+  <figcaption>Figure 3: The "Orbital Sentinel Functional Suite" in Selenium IDE, containing all six designed test cases (TC01&ndash;TC06). The playback log shows TC02 finishing with state "passed".</figcaption>
+</figure>
+
+<h3>3.3 Functional Testing Results</h3>
+<table>
+  <tr><th>Metric</th><th class="num">Count</th></tr>
+  <tr><td>Test cases designed</td><td class="num">6</td></tr>
+  <tr><td>Test cases executed</td><td class="num">3</td></tr>
+  <tr><td>Passed</td><td class="num">3</td></tr>
+  <tr><td>Failed</td><td class="num">0</td></tr>
+  <tr><td>Not executed</td><td class="num">3</td></tr>
+</table>
+<p>All executed test cases (TC01, TC02, TC05) passed; no functional defects were found in the login, error-handling or alert-acknowledgement features. When the whole suite was run, Selenium IDE's desktop playback stopped at the hand-over after TC02 (a tool/playback-window issue, not an application failure), so TC03, TC04 and TC06 were not executed in this session. The dashboard in Figure 2 shows the same risk ordering that TC04 checks (ALT-001 at risk 10 first, ALT-005 at risk 2 last).</p>
+
+<h2 class="pb">4. Task 2 &mdash; Non-Functional (Load/Performance) Testing using JMeter</h2>
+
+<h3>4.1 Test Plan Configuration</h3>
+<table>
+  <tr><th>Element</th><th>Configuration</th></tr>
+  <tr><td>Thread Group ("Analysts")</td><td>50 concurrent users (threads), 10 s ramp-up, 10 loops per user</td></tr>
+  <tr><td>Requests per iteration</td><td>1. <code>POST /api/login</code> (JSON body with test credentials)<br>2. <code>GET /api/alerts</code><br>3. <code>POST /api/alerts/ALT-00{1..8}/acknowledge</code> (random alert)</td></tr>
+  <tr><td>Total requests</td><td>50 users &times; 10 loops &times; 3 requests = 1,500 samples</td></tr>
+  <tr><td>Config elements</td><td>HTTP Request Defaults (localhost:3000), HTTP Header Manager (Content-Type: application/json), HTTP Cookie Manager</td></tr>
+  <tr><td>Assertions</td><td>Response code = 200 on every request; response body contains "alertId" for GET /api/alerts</td></tr>
+  <tr><td>Listeners</td><td>Summary Report, Aggregate Report, View Results Tree</td></tr>
+</table>
+
+<h3>4.2 Performance Testing Results</h3>
+<p>Response times are in milliseconds (ms).</p>
+<table>
+  <tr><th>Endpoint</th><th class="num">Samples</th><th class="num">Average</th><th class="num">Median</th><th class="num">90% Line</th><th class="num">95% Line</th><th class="num">99% Line</th><th class="num">Min</th><th class="num">Max</th><th class="num">Std. Dev.</th><th class="num">Error %</th><th class="num">Throughput</th></tr>
+  <tr><td>POST /api/login</td><td class="num">500</td><td class="num">7</td><td class="num">6</td><td class="num">12</td><td class="num">15</td><td class="num">23</td><td class="num">3</td><td class="num">38</td><td class="num">4.06</td><td class="num">0.00%</td><td class="num">50.3/sec</td></tr>
+  <tr><td>GET /api/alerts</td><td class="num">500</td><td class="num">6</td><td class="num">5</td><td class="num">12</td><td class="num">15</td><td class="num">22</td><td class="num">3</td><td class="num">24</td><td class="num">3.80</td><td class="num">0.00%</td><td class="num">50.5/sec</td></tr>
+  <tr><td>POST /api/alerts/:id/acknowledge</td><td class="num">500</td><td class="num">6</td><td class="num">5</td><td class="num">12</td><td class="num">15</td><td class="num">24</td><td class="num">3</td><td class="num">26</td><td class="num">4.00</td><td class="num">0.00%</td><td class="num">50.5/sec</td></tr>
+  <tr><th>TOTAL</th><th class="num">1500</th><th class="num">6</th><th class="num">5</th><th class="num">12</th><th class="num">15</th><th class="num">23</th><th class="num">3</th><th class="num">38</th><th class="num">3.97</th><th class="num">0.00%</th><th class="num">150.7/sec</th></tr>
+</table>
+<p class="note">Network: 181.03 KB/sec received, 32.57 KB/sec sent (total). Average response size: 440 bytes (login), 2,686.9 bytes (alerts), 564 bytes (acknowledge).</p>
+
+<h3>4.3 Performance Test Screenshots</h3>
+
+<figure>
+  <img src="img/jmeter_summary.png" alt="JMeter Summary Report">
+  <figcaption>Figure 4: JMeter Summary Report &mdash; 1,500 samples, 0.00% errors, average 6 ms, total throughput 150.7 requests/sec.</figcaption>
+</figure>
+
+<figure>
+  <img src="img/jmeter_aggregate.png" alt="JMeter Aggregate Report">
+  <figcaption>Figure 5: JMeter Aggregate Report &mdash; median, 90%, 95% and 99% response-time lines for each endpoint.</figcaption>
+</figure>
+
+<figure>
+  <img src="img/jmeter_results_tree.png" alt="JMeter View Results Tree">
+  <figcaption>Figure 6: JMeter View Results Tree &mdash; every sampled request passed (green), with response code 200 OK. Captured from a repeat run with the same configuration.</figcaption>
+</figure>
+
+<h3>4.4 Analysis</h3>
+<ul>
+  <li><b>Response time:</b> the average response time was 6&ndash;7 ms on all endpoints, and 90% of requests completed within 12 ms. The slowest request of the whole test took 38 ms (login).</li>
+  <li><b>Throughput:</b> the system handled about 150.7 requests/sec in total (about 50 requests/sec per endpoint) with 50 concurrent users.</li>
+  <li><b>Reliability:</b> 0.00% errors across 1,500 requests. Every response returned HTTP 200 and passed its assertions.</li>
+  <li><b>Stability:</b> the low standard deviation (about 4 ms) shows consistent response times under load, with no sign of degradation as users ramped up.</li>
+  <li>The SRS performance requirement (dashboard updates within about one second) is met with a large margin for these operations. Because the build uses in-memory mock data, these figures are a baseline; they should be measured again once the real database and detection pipeline are integrated.</li>
+</ul>
+
+<h2>5. Final Test Report Summary</h2>
+<table>
+  <tr><th>Area</th><th>Result</th></tr>
+  <tr><td>Functional testing (Selenium IDE)</td><td>6 test cases designed; 3 executed, all 3 passed (TC01, TC02, TC05); 0 failed; 3 not executed because of a Selenium IDE suite-playback issue</td></tr>
+  <tr><td>Defects found</td><td>None in the application. Tool issue: Selenium IDE desktop playback stalled between tests when the suite was run.</td></tr>
+  <tr><td>Load test (JMeter)</td><td>50 users, 10 s ramp-up, 10 loops &mdash; 1,500 requests</td></tr>
+  <tr><td>Average / 90th percentile response time</td><td>6 ms / 12 ms</td></tr>
+  <tr><td>Maximum response time</td><td>38 ms</td></tr>
+  <tr><td>Throughput</td><td>150.7 requests/sec</td></tr>
+  <tr><td>Error rate</td><td>0.00%</td></tr>
+  <tr><td>Overall verdict</td><td>The executed functional tests passed, and the application met its performance expectations under the tested load.</td></tr>
+</table>
+
+<h2>6. Conclusion</h2>
+<p>Test cases were designed for the Orbital Sentinel web application and executed with Selenium IDE. Login validation and the alert-acknowledgement workflow (AlertRaised &rarr; Acknowledged) behaved as specified in all executed tests. A load test with Apache JMeter on the application's REST API recorded an average response time of 6 ms, a 90th-percentile time of 12 ms, a throughput of 150.7 requests/sec and a 0% error rate with 50 concurrent users. This shows the application is functionally correct for the tested features and responsive under moderate load. Both tools were used successfully to carry out functional and non-functional testing.</p>
+
+</body>
+</html>

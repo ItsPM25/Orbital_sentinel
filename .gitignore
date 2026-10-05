@@ -1,0 +1,25 @@
+# Node / Next.js
+node_modules/
+.next/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Local data, models, databases
+data/
+models/
+*.db
+*.db-wal
+*.db-shm
+
+# Secrets
+.env
+
+# Test output
+*.jtl
+jmeter-report/
+jmeter.log
