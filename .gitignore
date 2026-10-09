@@ -9,9 +9,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Local data, models, databases
+# Local data, trained weights (D3), databases
 data/
-models/
+/models/
 *.db
 *.db-wal
 *.db-shm
