@@ -1,6 +1,7 @@
 // Typed client for the backend API (ARCHITECTURE.md section 7). Every call goes
 // through the same-origin /api/* Next.js rewrite, so no base URL is needed.
 import type { AlertView, DetectionView } from "./entities";
+import type { TleEntry } from "./sgp4";
 
 export class ApiError extends Error {
   status: number;
@@ -191,4 +192,7 @@ export const api = {
       body: JSON.stringify({ includeReadings }),
     }),
   listModels: () => request<DetectionModel[]>("/api/admin/models"),
+
+  // Phase 5 — TLE feed (REQ-12)
+  tle: () => request<TleEntry[]>("/api/tle"),
 };

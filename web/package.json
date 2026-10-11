@@ -8,10 +8,13 @@
     "start": "next start -p 3001"
   },
   "dependencies": {
+    "globe.gl": "^2.46.2",
     "next": "15.5.4",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "recharts": "^2.15.4"
+    "recharts": "^2.15.4",
+    "satellite.js": "^5.0.0",
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/node": "^22",

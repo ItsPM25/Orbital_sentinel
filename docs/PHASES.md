@@ -256,23 +256,30 @@ A complete analyst, admin and evaluator UI on real pipeline data.
 
 **5a can run in parallel** with Phases 1–4. Only 5b needs Phase 4.
 
+### Status — code complete and tested (2026-10-11)
+- **TBD-2 closed**: fleet of 5 satellites (SMAP real, Aqua/Terra/Landsat 9/Sentinel-2A proxies replaying disjoint channel subsets). Documented in `docs/adr/004-fleet-and-proxies.md`.
+- `backend/app/tracking/`: CelesTrak GP client with 2-hour caching in `SATELLITE`, stale fallback flag, and bundled snapshot TLEs for offline demos.
+- `GET /api/tle`: authenticated endpoint serving current TLEs.
+- `/globe` route: globe.gl 3D Earth, satellite.js SGP4 propagation at 1 Hz, orbit trails, dynamic risk coloring from SSE ranking stream, click-to-open health panel drawer, proxy badge and legend.
+- Tests: 10 new backend tests in `tests/test_tracking.py` (202 passing in total suite); TC09 added to `TEST_CASES.md` and `OrbitalSentinel.side`.
+
 ### Tasks
 **5a — Tracking and a plain globe (REQ-12, REQ-13)**
-- [ ] **TBD-2:** choose the fleet. Keep SMAP as the real satellite and add 4–6 Earth-orbiting proxies, each with a disjoint channel subset containing at least one labelled anomaly. Record the choice in `docs/adr/004-fleet-and-proxies.md`.
-- [ ] `tracking/`: CelesTrak GP client, a TLE cache in SATELLITE (refreshed at most every 2 h), a stale fallback, and a bundled snapshot TLE file for offline demos.
-- [ ] `GET /api/tle`.
-- [ ] `/globe`: a globe.gl Earth; satellite.js SGP4 propagation at 1 Hz; orbit trails; ground track on hover.
+- [x] **TBD-2:** choose the fleet. Keep SMAP as the real satellite and add 4–6 Earth-orbiting proxies, each with a disjoint channel subset containing at least one labelled anomaly. Record the choice in `docs/adr/004-fleet-and-proxies.md`.
+- [x] `tracking/`: CelesTrak GP client, a TLE cache in SATELLITE (refreshed at most every 2 h), a stale fallback, and a bundled snapshot TLE file for offline demos.
+- [x] `GET /api/tle`.
+- [x] `/globe`: a globe.gl Earth; satellite.js SGP4 propagation at 1 Hz; orbit trails; ground track on hover.
 
 **5b — Health on the globe (REQ-14, REQ-15)**
-- [ ] Colour satellites by current risk (green / amber / red / critical); update live from the SSE `ranking` events.
-- [ ] Click a satellite to open the health-panel drawer (the same component as `/satellites/[id]`).
-- [ ] "Replayed telemetry" badge on proxy satellites; legend for the risk colours.
+- [x] Colour satellites by current risk (green / amber / red / critical); update live from the SSE `ranking` events.
+- [x] Click a satellite to open the health-panel drawer (the same component as `/satellites/[id]`).
+- [x] "Replayed telemetry" badge on proxy satellites; legend for the risk colours.
 
 **Tests**
-- [ ] Unit test: SGP4 position for SMAP at a fixed epoch matches a reference (from the satellite.js docs or a known ephemeris) within tolerance.
-- [ ] Integration test with CelesTrak mocked: cold-cache load in a few seconds (SRS §5.1).
-- [ ] Frame-rate check in the Chrome performance panel at the demo fleet size.
-- [ ] Selenium: click a satellite → health panel opens. Use a test hook or a list fallback, because canvas clicks are hard to record.
+- [x] Unit test: SGP4 position for SMAP at a fixed epoch matches a reference (from the satellite.js docs or a known ephemeris) within tolerance.
+- [x] Integration test with CelesTrak mocked: cold-cache load in a few seconds (SRS §5.1).
+- [ ] Frame-rate check in the Chrome performance panel at the demo fleet size (Phase 6 hardening).
+- [x] Selenium: click a satellite → health panel opens. Use a test hook or a list fallback, because canvas clicks are hard to record (TC09).
 
 ### Deliverables
 A live 3D globe with real positions, health colours and click-to-inspect; ADR-004.

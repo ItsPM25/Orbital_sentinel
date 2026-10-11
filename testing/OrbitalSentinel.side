@@ -124,6 +124,26 @@
         { "id": "tc08-09", "comment": "", "command": "waitForElementVisible", "target": "id=healthTitle", "targets": [], "value": "10000" },
         { "id": "tc08-10", "comment": "", "command": "assertText", "target": "id=healthTitle", "targets": [], "value": "SMAP - Health Panel" }
       ]
+    },
+    {
+      "id": "tc09",
+      "name": "TC09 Globe satellite click opens health-panel drawer (Phase 5, REQ-15)",
+      "commands": [
+        { "id": "tc09-01", "comment": "Reset and log in", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc09-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc09-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc09-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc09-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc09-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc09-07", "comment": "Navigate to globe page", "command": "waitForElementVisible", "target": "id=alertTable", "targets": [], "value": "10000" },
+        { "id": "tc09-08", "comment": "", "command": "open", "target": "/globe", "targets": [], "value": "" },
+        { "id": "tc09-09", "comment": "Globe container loads", "command": "waitForElementVisible", "target": "id=globeContainer", "targets": [], "value": "15000" },
+        { "id": "tc09-10", "comment": "Use satellite list button (canvas clicks unreliable in Selenium)", "command": "waitForElementVisible", "target": "id=sat-list-SAT-001", "targets": [], "value": "15000" },
+        { "id": "tc09-11", "comment": "", "command": "click", "target": "id=sat-list-SAT-001", "targets": [], "value": "" },
+        { "id": "tc09-12", "comment": "Health drawer opens", "command": "waitForElementVisible", "target": "id=healthDrawer-SAT-001", "targets": [], "value": "10000" },
+        { "id": "tc09-13", "comment": "Close the drawer", "command": "click", "target": "id=drawerClose", "targets": [], "value": "" },
+        { "id": "tc09-14", "comment": "Drawer gone", "command": "waitForElementNotPresent", "target": "id=healthDrawer-SAT-001", "targets": [], "value": "5000" }
+      ]
     }
   ],
   "suites": [
@@ -133,7 +153,7 @@
       "persistSession": false,
       "parallel": false,
       "timeout": 300,
-      "tests": ["tc01", "tc02", "tc03", "tc04", "tc05", "tc06", "tc07", "tc08"]
+      "tests": ["tc01", "tc02", "tc03", "tc04", "tc05", "tc06", "tc07", "tc08", "tc09"]
     }
   ],
   "urls": ["http://localhost:3001/"],

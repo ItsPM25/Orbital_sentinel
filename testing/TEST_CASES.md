@@ -16,6 +16,7 @@
 | TC06 | Session | Logout, then direct dashboard access is blocked | 1. Log in 2. Click Logout 3. Open /dashboard directly | — | After logout the login page is shown; opening /dashboard redirects to /login and no alert table is shown | | |
 | TC07 | Roles (Phase 4) | An Analyst cannot reach the admin page | 1. Log in as Analyst 2. Open /admin directly | analyst@orbitalsentinel.test / sentinel123 | Sent back to the dashboard; the admin page's title is never shown (client-side role check, SRS 5.3) | | |
 | TC08 | Drill-down (Phase 4, REQ-17) | Clicking a satellite name on an alert opens its health panel | 1. Log in 2. Click the satellite name on the top alert | — | The health panel for SMAP opens, showing its verdict and risk level | | |
+| TC09 | Globe (Phase 5, REQ-15) | Clicking a satellite on the globe opens the health-panel drawer | 1. Log in 2. Navigate to /globe 3. Wait for the globe to load (`#globeCanvas` visible) 4. Click the first satellite chip in the satellite list fallback (`#sat-list-SAT-001`) or click the canvas point labelled SAT-001 | SAT-001 (SMAP) | The health-panel drawer (`#healthDrawer-SAT-001`) appears and shows the satellite name; the close button (`#drawerClose`) hides it again | | |
 
 ## Task 2 — Performance test (JMeter, `OrbitalSentinel.jmx`)
 

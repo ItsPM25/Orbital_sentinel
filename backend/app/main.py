@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api import admin, alerts, auth, detections, dev, evaluation, ranking, satellites, sessions, stream
+from app.api import admin, alerts, auth, detections, dev, evaluation, ranking, satellites, sessions, stream, tle
 from app.core.settings import settings
 from app.services import events
 
@@ -28,6 +28,7 @@ app.include_router(stream.router, prefix="/api")
 app.include_router(sessions.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(evaluation.router, prefix="/api")
+app.include_router(tle.router, prefix="/api")
 if settings.enable_test_reset:
     app.include_router(dev.router, prefix="/api")
 

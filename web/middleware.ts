@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 // pages happens client-side (fetch /api/me, redirect if not Administrator), since
 // middleware here cannot verify the cookie's signature without sharing the backend's
 // secret key.
-const PROTECTED_PREFIXES = ["/dashboard", "/satellites", "/evaluation", "/admin"];
+const PROTECTED_PREFIXES = ["/dashboard", "/satellites", "/evaluation", "/admin", "/globe"];
 const SESSION_COOKIE = "os_session";
 
 export function middleware(request: NextRequest) {
@@ -20,5 +20,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/satellites/:path*", "/evaluation/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*", "/satellites/:path*", "/evaluation/:path*", "/admin/:path*", "/globe/:path*", "/globe"],
 };

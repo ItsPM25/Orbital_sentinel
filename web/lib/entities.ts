@@ -1,6 +1,10 @@
 // Entity types traceable to the ER diagram (Experiment 4) and the
 // detection-lifecycle state diagram (Experiment 5). ER attribute names are
 // kept, converted from snake_case to camelCase.
+//
+// Phase 5 types (globe) are defined in lib/sgp4.ts and re-exported here for
+// convenience.
+export type { GeoPosition, TleEntry } from "./sgp4";
 
 export type AlertStatus = "AlertRaised" | "Acknowledged" | "Resolved"; // states from the state diagram
 export type SeverityLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";

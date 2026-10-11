@@ -50,7 +50,7 @@ export default function DashboardPage() {
     <main>
       <h1 id="dashboardTitle">Orbital Sentinel - Alert Dashboard</h1>
       <nav>
-        <Link href="/evaluation">Evaluation</Link> | <button id="logoutBtn" onClick={logout}>Logout</button>
+        <Link href="/globe">Globe</Link> | <Link href="/evaluation">Evaluation</Link> | <button id="logoutBtn" onClick={logout}>Logout</button>
       </nav>
       <p id="alertCount">{alerts.length} alerts</p>
       <table id="alertTable" border={1} cellPadding={6} style={{ borderCollapse: "collapse" }}>
