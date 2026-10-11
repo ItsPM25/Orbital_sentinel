@@ -50,3 +50,16 @@ export interface AlertView extends Alert {
   severityLevel: SeverityLevel;
   anomalyScore: number;
 }
+
+// Detection joined with its Satellite, as served by GET /api/detections (REQ-18).
+export interface DetectionView {
+  detectionId: string;
+  satelliteId: string;
+  satelliteName: string;
+  modelId: string;
+  timestamp: string;
+  anomalyScore: number;
+  severityLevel: SeverityLevel | null;
+  persistenceCount: number;
+  outcome: "Suppressed" | "Confirmed" | null;
+}

@@ -119,31 +119,39 @@ Two ADRs, a results table (per-candidate P/R/F1/FPR and training time), and froz
 
 **Goal:** a working detection core. It replays real telemetry, scores it with the chosen model, logs detections, and reports real accuracy numbers.
 
+### Status — code complete, baseline report pending (2026-10-11)
+- Pipeline built and tested: `ingest.py` (ReplaySource, Normaliser, Windower, REQ-6 gap repair), `lstm.py` + `train.py` (the Phase 1 ADR-001 model, resumable training CLI), `detect.py` (StreamingThreshold — an incremental version of the spike's dynamic threshold, decided in 70-point steps and never revising a committed decision), `lifecycle.py` (all 19 transitions), `session.py` (MonitoringSession orchestrator), `app/evaluation/` (metrics + the baseline report CLI), `/api/sessions`, `/api/detections`, and a `/evaluation` page. 127 backend tests pass (103 before this status + the ones added with it), lint is clean, the web app builds.
+- **Verified end to end** on the one channel trained so far (A-1): a real `MonitoringSession` replayed SMAP's test split through the real `LstmDetector` and wrote through to the real database via the FastAPI-shaped code path (`app/api/detections` reads it back).
+- **Training is still running.** 1 of 81 channels done; the laptop has been running roughly 10-20x slower than the Phase 1 benchmark. The cause: a Selenium IDE window left open since 23 Sept (Exp 9) had accumulated about 90 hours of CPU time and was still active, alongside several Chrome windows — not a bug in this phase's code. Resolving that and re-running `python -m app.pipeline.train` (resumable; already-trained channels are skipped) is the remaining step before the baseline report can be generated.
+- **A genuine limitation found while verifying A-1, inherited from the Phase 1 spike, not introduced here:** `decide_window()`'s absolute `errors.max() <= 0.05` guard (same line in `ml/spike/common.py`) assumes error scales like the Phase 1 sample channels. On a channel whose EWMA-smoothed errors never exceed 0.05 in absolute terms, no window can ever be flagged, regardless of how large the error is relative to that channel's own normal level — A-1's smoothed error peaked at 0.044 against a labelled anomaly, so it was missed entirely. This wasn't caught in Phase 1 because none of its 16 sampled channels happened to have such a low error scale. Left as-is for Phase 2 (faithful to the validated ADR-001 algorithm); flagged for Phase 3's threshold tuning (TBD-1), where a per-channel relative guard (e.g. relative to that channel's own training-error statistics, already computed and stored) should replace the fixed constant.
+- **Window-scoring time was not cleanly verified against the <1s exit criterion**: measured 857ms-1972ms per window on A-1 while training (and the stuck Selenium IDE) were competing for the same CPU. That is not a trustworthy measurement of the pipeline's real cost and needs re-measuring on an idle machine.
+- Also fixed in this phase: a correctness bug in the new streaming threshold's buffering step (`_buffer`) that used `np.convolve(mode="same")`, which does not reliably return the input's length when the kernel is longer — caught by a unit test before anything shipped, not by production use.
+
 ### Tasks
 **1.0 Ingest (REQ-1, REQ-2, REQ-6)**
-- [ ] Admin dataset import: `data/` → CHANNEL + TELEMETRY_READING (with `split` and `is_labeled_anomaly`). Make it idempotent.
-- [ ] `ReplaySource`: time-ordered stream per satellite with a configurable speed.
-- [ ] `Normaliser`: fitted on train only, statistics stored in D3 with the model.
-- [ ] `Windower`: history length and step from the Phase 1 ADR.
-- [ ] Malformed-data handling: interpolate short gaps, skip long ones, count and log them. Test with NaN, inf and gap fixtures, and confirm the session never stops.
+- [x] Admin dataset import: `data/` → CHANNEL + TELEMETRY_READING (with `split` and `is_labeled_anomaly`). Make it idempotent.
+- [x] `ReplaySource`: time-ordered stream per satellite with a configurable speed.
+- [x] `Normaliser`: fitted on train only, statistics stored in D3 with the model.
+- [x] `Windower`: history length and step from the Phase 1 ADR.
+- [x] Malformed-data handling: interpolate short gaps, skip long ones, count and log them. Test with NaN, inf and gap fixtures, and confirm the session never stops.
 
 **2.0 Detect (REQ-3, REQ-4)**
-- [ ] Move the winning model from `ml/spike/` into `backend/app/pipeline/detect.py` behind the `Detector` protocol.
-- [ ] `ml/train.py`: train the per-channel models for the monitored channels → `models/<model_id>/` + a DETECTION_MODEL row (threshold, hyperparameters, trained_at).
-- [ ] Channel score and satellite score as defined in ARCHITECTURE.md §5.2; threshold labelling (REQ-4).
+- [x] Move the winning model from `ml/spike/` into `backend/app/pipeline/detect.py` behind the `Detector` protocol.
+- [x] `ml/train.py`: train the per-channel models for the monitored channels → `models/<model_id>/` + a DETECTION_MODEL row (threshold, hyperparameters, trained_at).
+- [x] Channel score and satellite score as defined in ARCHITECTURE.md §5.2; threshold labelling (REQ-4).
 
 **Lifecycle + logging (Exp 5, REQ-18)**
-- [ ] `pipeline/lifecycle.py`: the state machine with all 14 states and 19 transitions. In this phase the persistence filter is a pass-through (N = 1); it becomes real in Phase 3.
-- [ ] Unit test **every transition** and guard.
-- [ ] `MonitoringSession` orchestrator (asyncio task per satellite); `POST/DELETE /api/sessions`.
-- [ ] Write a DETECTION for every above-threshold window; keep per-session counters for normal and malformed windows.
+- [x] `pipeline/lifecycle.py`: the state machine with all 14 states and 19 transitions. In this phase the persistence filter is a pass-through (N = 1); it becomes real in Phase 3.
+- [x] Unit test **every transition** and guard.
+- [x] `MonitoringSession` orchestrator (asyncio task per satellite); `POST/DELETE /api/sessions`.
+- [x] Write a DETECTION for every above-threshold window; keep per-session counters for normal and malformed windows.
 
 **Evaluation (REQ-5)**
-- [ ] `evaluation/metrics.py`: precision, recall, F1, FPR against the labels. Write a CLI that emits a Markdown/JSON report per model.
+- [x] `evaluation/metrics.py`: precision, recall, F1, FPR against the labels. Write a CLI that emits a Markdown/JSON report per model.
 - [ ] Commit the first baseline accuracy report to `docs/results/`.
 
 **Minimal UI hook**
-- [ ] `GET /api/detections`, plus a simple `/evaluation` page listing detections and the metrics.
+- [x] `GET /api/detections`, plus a simple `/evaluation` page listing detections and the metrics.
 
 ### Deliverables
 Replay → detect → log pipeline, trained baseline models, and a baseline accuracy report.
