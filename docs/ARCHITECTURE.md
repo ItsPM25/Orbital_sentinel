@@ -238,8 +238,8 @@ This follows the Level-2 DFD order exactly:
 |---|---|---|
 | **3.1 Attribute to channel** (REQ-7) | Rank the satellite's channels by their share of the anomaly: `contribution = channel_score / Σ channel_scores` over the channels above threshold. The top contributors become ATTRIBUTION rows. If no channel stands out, record `unknown` (Exp 5 assumption 6). The method is **error-ranking**, chosen in the spike ([ADR 002](adr/002-attribution-method.md), TBD-3 closed). | ATTRIBUTION |
 | **3.2 Persistence filter** (REQ-8) | Count consecutive anomalous windows per satellite. If the count is below N (`MONITORING_CONFIG.persistence_threshold`), the window is `Suppressed` and logged as a false alarm. Otherwise it is `Confirmed`. | DETECTION (outcome) |
-| **3.3 Severity score** (REQ-9) | `severity_index = norm(score) × g(persistence_count)` is mapped to LOW / MEDIUM / HIGH / CRITICAL using `severity_threshold` bands, and to `risk_level` 1–10. The exact formula is tuned in Phase 3 (TBD-1). | DETECTION.severity_level, ALERT.risk_level |
-| **3.4 Risk ranking** (REQ-10) | Satellites are ordered by current severity, then risk_level, then most recent detection. The ranking is pushed over SSE. | (derived) |
+| **3.3 Severity score** (REQ-9) | `severity_index = norm(score) × g(persistence_count)`, where `norm(score)` ramps from 0 at the threshold to 1 at 3× the threshold and `g(persistence_count)` ramps from 0 to 1 over 5 consecutive confirmed windows (so a detection needs to be both strong and sustained to read as severe). `severity_threshold` (`MONITORING_CONFIG`) is a per-satellite sensitivity knob the index is divided by before banding into LOW/MEDIUM/HIGH/CRITICAL and `risk_level` 1–10 ([`app/pipeline/explain/severity.py`](../backend/app/pipeline/explain/severity.py)). | DETECTION.severity_level, ALERT.risk_level |
+| **3.4 Risk ranking** (REQ-10) | Satellites are ordered by current severity, then risk_level, then most recent detection, via `GET /api/ranking`. Push over SSE is added in Phase 4. | (derived) |
 
 **REQ-11.** The evaluator runs the same replay twice, with and without 3.2, and reports FPR, precision and recall for both side by side. This is the project's main measurable result.
 
@@ -400,7 +400,7 @@ All JSON is camelCase. Errors use the form `{error, detail}`. The three Exp 9 en
 | REQ-5 precision / recall / FPR | `evaluation/metrics.py` | 2 |
 | REQ-6 malformed data | Ingest + lifecycle DataError | 2 |
 | REQ-7 channel attribution | `explain/attribution.py` | 3 |
-| REQ-8 persistence filter | `explain/persistence.py` | 3 |
+| REQ-8 persistence filter | `pipeline/lifecycle.py` (live, built in Phase 2) + `evaluation/persistence.py` (offline, for REQ-11) | 2 → 3 |
 | REQ-9 severity | `explain/severity.py` | 3 |
 | REQ-10 risk ranking | `explain/ranking.py` | 3 |
 | REQ-11 FPR with/without filter | `evaluation/reports.py` | 3 |

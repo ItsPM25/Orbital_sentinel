@@ -167,28 +167,34 @@ Replay → detect → log pipeline, trained baseline models, and a baseline accu
 
 **Goal:** turn raw detections into explained, de-noised, ranked alerts, and **measure the improvement** over the baseline.
 
+### Status — code complete and unit-tested; the REQ-11 report awaits full training (2026-10-11)
+- Built and tested: `explain/attribution.py` (error-ranking, REQ-7), `explain/severity.py` (the severity formula, REQ-9, now the single source `schemas/alert.py` imports `risk_label` from), `explain/ranking.py` + `GET /api/ranking` (REQ-10), `evaluation/persistence.py` (an offline persistence filter that reproduces the live per-window rule) and `evaluation/reports.py` (the REQ-11 sweep + comparison CLI). `MonitoringSession` now reads `persistence_n`/`severity_threshold` from `MONITORING_CONFIG`, writes ATTRIBUTION rows, and merges confirmed windows into one escalating alert per episode instead of one alert per window. 150 backend tests pass (up from 103 after Phase 2), lint is clean, the web build is clean.
+- **Verified against real trained channels** (not just fakes): ran a real `MonitoringSession` with the real `LstmDetector` over two trained SMAP channels through the live database code path.
+- **The REQ-11 with/without comparison and the single-channel attribution hit-rate re-measurement are not done yet.** Both need either all (or substantially more of) the 81 channels trained, which was still in progress at the end of Phase 2 and continues in the background. Running the comparison now, on only the dozen channels trained so far, would itself compete with that training for the same scarce CPU and slow it down further — not a good trade for a preliminary number. `docs/adr/003-thresholds.md` is drafted with the method and is filled in once the comparison runs for real.
+- Default `MONITORING_CONFIG.persistence_threshold` stays at its Phase 0 placeholder (3) until the sweep gives a real answer.
+
 ### Tasks
 **3.1 Attribute (REQ-7)**
-- [ ] Implement the attribution method chosen in ADR-002. Write ATTRIBUTION rows (top-k channels with `contribution_score`); handle `unknown`.
-- [ ] Test: on labelled single-channel anomalies, the top attributed channel is the labelled one (record the hit rate).
+- [x] Implement the attribution method chosen in ADR-002. Write ATTRIBUTION rows (top-k channels with `contribution_score`); handle `unknown`.
+- [ ] Test: on labelled single-channel anomalies, the top attributed channel is the labelled one (record the hit rate). *(Deferred — needs several trained channels from the same labelled-group experiment as ADR 002's spike; none of those specific channels are trained yet. ADR 002 already validated the method itself at 15/17 on the throwaway spike code; this task re-measures the now-integrated production code once more channels are ready.)*
 
 **3.2 Persistence filter (REQ-8)**
-- [ ] Consecutive-window counter per satellite, with N from MONITORING_CONFIG. Outcome `Suppressed` (logged as a false alarm) or `Confirmed`.
+- [x] Consecutive-window counter per satellite, with N from MONITORING_CONFIG. Outcome `Suppressed` (logged as a false alarm) or `Confirmed`.
 
 **3.3 Severity (REQ-9)**
-- [ ] `severity_index = norm(score) × g(persistence)` → LOW/MEDIUM/HIGH/CRITICAL bands from `severity_threshold`, and `risk_level` 1–10.
+- [x] `severity_index = norm(score) × g(persistence)` → LOW/MEDIUM/HIGH/CRITICAL bands from `severity_threshold`, and `risk_level` 1–10.
 
 **3.4 Risk ranking (REQ-10)**
-- [ ] Ranking ordered by severity, then risk_level, then recency. Expose `GET /api/ranking`.
+- [x] Ranking ordered by severity, then risk_level, then recency. Expose `GET /api/ranking`.
 
 **Alerts**
-- [ ] Raise an ALERT on the first `Confirmed` window of an episode. Later windows escalate the open alert. The episode ends after N normal windows.
-- [ ] Alert status flow `AlertRaised → Acknowledged → Resolved` via the acknowledge API.
+- [x] Raise an ALERT on the first `Confirmed` window of an episode. Later windows escalate the open alert. The episode ends after N normal windows.
+- [x] Alert status flow `AlertRaised → Acknowledged` via the acknowledge API (built in Phase 0). *`Acknowledged → Resolved` has no API yet — Exp 5 assumption 5 treats acknowledgement, not resolution, as the human action this project automates; a resolve endpoint is Phase 4 scope.*
 
 **Tuning + measurement (TBD-1, REQ-11)**
-- [ ] Split each channel's test data into a **tuning slice** and a **reporting slice**.
-- [ ] Sweep N and the severity bands on the tuning slice; pick the values; close **TBD-1** in `docs/adr/003-thresholds.md`.
-- [ ] `evaluation/reports.py`: run the reporting slice **with and without** the persistence filter; report FPR, precision and recall side by side. Commit to `docs/results/`.
+- [x] Split each channel's test data into a **tuning slice** and a **reporting slice**.
+- [x] Sweep N on the tuning slice via `app/evaluation/reports.py` (code written and unit-tested); `docs/adr/003-thresholds.md` is drafted. *The severity formula's constants are checked by property-based unit tests instead of a sweep — there is no ground-truth severity label in the dataset to tune against.*
+- [ ] Run `app/evaluation/reports.py` on all 81 channels and commit the real with/without numbers to `docs/results/` and ADR 003. *Blocked on Phase 2's training run finishing — see the status note below.*
 
 ### Deliverables
 Explained, ranked alerts in the database, ADR-003, and the **baseline-vs-enhanced comparison report**, the project's headline result.

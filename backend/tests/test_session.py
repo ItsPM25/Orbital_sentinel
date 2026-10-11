@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.db import Base, make_engine
-from app.models import Alert, AlertStatus, Detection, DetectionOutcome
+from app.models import Alert, AlertStatus, Attribution, Channel, Detection, DetectionOutcome
 from app.pipeline.detect import ScriptedDetector
 from app.pipeline.session import MonitoringSession
 from app.pipeline.types import TelemetryWindow
@@ -159,3 +159,131 @@ def test_window_scoring_is_well_under_one_second(session_factory):
     session.run()
     assert time.perf_counter() - started < 1.0
     assert session.counters.last_score_ms < 1000
+
+
+# --- Phase 3: episode escalation, attribution ---------------------------------------------
+
+
+def test_second_confirmed_window_in_same_episode_escalates_not_duplicates(session_factory):
+    windows = [fake_window("SAT-001", i, i * 70, i * 70 + 70) for i in range(2)]
+    detector = ScriptedDetector([1.2, 2.0], threshold=1.0)  # both anomalous, persistence_n=1
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+    )
+    session.run()
+    with session_factory() as db:
+        detections = db.query(Detection).filter_by(satellite_id="SAT-001").all()
+        alerts = db.query(Alert).all()
+        assert len(detections) == 2  # every confirmed window is logged (REQ-18)
+        assert len(alerts) == 1  # but only one alert for the episode
+        assert alerts[0].risk_level > 1  # escalated by the second, stronger window
+
+
+def test_alert_risk_level_never_decreases_within_an_episode(session_factory):
+    # Window 0: score=5.0, persistence=1 -> risk_level 5. Window 1: score=1.2, persistence=2
+    # (weaker but more persistent) -> risk_level 2 on its own. The alert must stay at 5.
+    windows = [fake_window("SAT-001", i, i * 70, i * 70 + 70) for i in range(2)]
+    detector = ScriptedDetector([5.0, 1.2], threshold=1.0)
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+    )
+    session.run()
+    with session_factory() as db:
+        alerts = db.query(Alert).all()
+        assert len(alerts) == 1
+        assert alerts[0].risk_level == 5  # not downgraded to window 1's own (lower) risk_level of 2
+
+
+def test_episode_ends_after_persistence_n_normal_windows_then_a_new_alert_starts(session_factory):
+    # persistence_n=2: windows 0-1 anomalous confirm episode 1 (w0 suppressed, w1 confirmed);
+    # windows 2-3 normal end it (streak reaches 2); windows 4-5 anomalous confirm episode 2.
+    windows = [fake_window("SAT-001", i, i * 70, i * 70 + 70) for i in range(6)]
+    detector = ScriptedDetector([2.0, 2.0, 0.1, 0.1, 2.0, 2.0], threshold=1.0)
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+        persistence_n=2,
+    )
+    session.run()
+    with session_factory() as db:
+        alerts = db.query(Alert).order_by(Alert.created_at).all()
+        assert len(alerts) == 2  # the episode ended and a new one started
+        detections = db.query(Detection).filter_by(satellite_id="SAT-001").all()
+        assert len(detections) == 4  # w0,w1,w4,w5 all logged (2 suppressed, 2 confirmed)
+
+
+def test_episode_stays_open_through_a_single_normal_blip_below_persistence_n(session_factory):
+    # persistence_n=3: w0-2 anomalous confirm episode 1 (consecutive reaches 3 at w2).
+    # w3 is a single normal blip (streak=1, below persistence_n=3: episode NOT ended).
+    # w4-6 anomalous re-confirm (consecutive resets at w3, reaches 3 again at w6) and,
+    # because the episode never ended, escalate the SAME alert instead of opening a new one.
+    windows = [fake_window("SAT-001", i, i * 70, i * 70 + 70) for i in range(7)]
+    detector = ScriptedDetector([2.0, 2.0, 2.0, 0.1, 2.0, 2.0, 2.0], threshold=1.0)
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+        persistence_n=3,
+    )
+    session.run()
+    with session_factory() as db:
+        assert db.query(Alert).count() == 1  # still the same episode
+
+
+def test_attribution_rows_written_when_the_channel_is_imported(session_factory):
+    with session_factory() as db:
+        db.add(
+            Channel(
+                channel_id="CHN-Z-1", satellite_id="SAT-001", channel_name="Z-1", dataset_chan_id="Z-1"
+            )
+        )
+        db.commit()
+
+    windows = [fake_window("SAT-001", 0, 100, 170)]
+    detector = ScriptedDetector([2.0], threshold=1.0)
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+    )
+    session.run()
+    with session_factory() as db:
+        detection = db.query(Detection).filter_by(satellite_id="SAT-001").one()
+        attributions = db.query(Attribution).filter_by(detection_id=detection.detection_id).all()
+        assert len(attributions) == 1
+        assert attributions[0].channel_id == "CHN-Z-1"
+        assert attributions[0].contribution_score == 1.0
+
+
+def test_attribution_skipped_without_crashing_when_channel_not_imported(session_factory):
+    """REQ-18/REQ-7: a detection is still logged even if dataset import hasn't happened yet;
+    attribution is simply left empty (unknown) rather than failing the write."""
+    windows = [fake_window("SAT-001", 0, 100, 170)]
+    detector = ScriptedDetector([2.0], threshold=1.0)
+    session = MonitoringSession(
+        satellite_id="SAT-001",
+        model_id=MODEL_ID,
+        detector=detector,
+        source=FakeSource(windows),
+        db_factory=session_factory,
+    )
+    session.run()
+    with session_factory() as db:
+        assert db.query(Detection).filter_by(satellite_id="SAT-001").count() == 1
+        assert db.query(Attribution).count() == 0
+        assert db.query(Alert).count() == 1  # the alert is still raised (Exp 5 assumption 6)

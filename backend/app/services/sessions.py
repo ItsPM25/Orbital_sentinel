@@ -10,9 +10,11 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
+from sqlalchemy import select
+
 from app.core.db import SessionLocal
 from app.core.settings import settings
-from app.models import Satellite
+from app.models import MonitoringConfig, Satellite
 from app.pipeline.ingest import ReplaySource
 from app.pipeline.session import MonitoringSession
 
@@ -68,6 +70,13 @@ async def start_session(satellite_id: str, model_id: str, speed: float | None = 
         if db.get(Satellite, satellite_id) is None:
             raise ValueError(f"Unknown satellite {satellite_id}")
         chan_ids = channel_ids_for_satellite(db, satellite_id)
+        config = db.scalar(
+            select(MonitoringConfig)
+            .where(MonitoringConfig.satellite_id == satellite_id, MonitoringConfig.is_active)
+            .order_by(MonitoringConfig.updated_at.desc())
+        )
+        persistence_n = config.persistence_threshold if config else 1
+        severity_threshold = config.severity_threshold if config else 0.5
     if not chan_ids:
         raise NoTrainedChannels(satellite_id)
 
@@ -83,6 +92,8 @@ async def start_session(satellite_id: str, model_id: str, speed: float | None = 
         detector=detector,
         source=source,
         db_factory=SessionLocal,
+        persistence_n=persistence_n,
+        severity_threshold=severity_threshold,
     )
     task = asyncio.create_task(session.run_async(), name=f"monitor-{satellite_id}")
     _running[satellite_id] = RunningSession(satellite_id, model_id, session, task)

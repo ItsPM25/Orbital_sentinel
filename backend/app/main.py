@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api import alerts, auth, detections, dev, sessions
+from app.api import alerts, auth, detections, dev, ranking, sessions
 from app.core.settings import settings
 
 app = FastAPI(title="Orbital Sentinel API", version="0.1.0")
@@ -10,6 +10,7 @@ app = FastAPI(title="Orbital Sentinel API", version="0.1.0")
 app.include_router(auth.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
 app.include_router(detections.router, prefix="/api")
+app.include_router(ranking.router, prefix="/api")
 app.include_router(sessions.router, prefix="/api")
 if settings.enable_test_reset:
     app.include_router(dev.router, prefix="/api")

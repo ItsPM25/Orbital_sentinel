@@ -1,15 +1,8 @@
-from app.models import Alert, SeverityLevel
+from app.models import Alert
+from app.pipeline.explain.severity import risk_label
 from app.schemas.common import CamelModel, UtcDatetime
 
-
-def risk_label(risk_level: int) -> SeverityLevel:
-    if risk_level >= 9:
-        return SeverityLevel.CRITICAL
-    if risk_level >= 6:
-        return SeverityLevel.HIGH
-    if risk_level >= 4:
-        return SeverityLevel.MEDIUM
-    return SeverityLevel.LOW
+__all__ = ["AlertView", "risk_label"]
 
 
 class AlertView(CamelModel):

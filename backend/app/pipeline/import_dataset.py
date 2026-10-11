@@ -18,7 +18,7 @@ DEFAULT_SATELLITE_FOR_SPACECRAFT = {"SMAP": "SAT-001", "MSL": "SAT-002"}
 CHUNK = 2000
 
 
-def _channel_pk(chan_id: str) -> str:
+def channel_pk(chan_id: str) -> str:
     return f"CHN-{chan_id}"
 
 
@@ -40,7 +40,7 @@ def import_dataset(
         satellite_id = satellite_map.get(label.spacecraft)
         if satellite_id is None or db.get(Satellite, satellite_id) is None:
             continue
-        pk = _channel_pk(chan_id)
+        pk = channel_pk(chan_id)
         row = db.get(Channel, pk)
         if row is None:
             db.add(
