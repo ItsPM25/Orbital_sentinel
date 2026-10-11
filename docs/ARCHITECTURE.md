@@ -409,7 +409,7 @@ All JSON is camelCase. Errors use the form `{error, detail}`. The three Exp 9 en
 | REQ-14 colour by risk | Globe + RiskBadge | 5 |
 | REQ-15 click → health panel | Globe + HealthPanel | 5 |
 | REQ-16 ranked alert list | `/alerts`, `GET /api/alerts` | 4 |
-| REQ-17 drill-down plots | `/satellites/[id]`, TelemetryChart | 4 |
+| REQ-17 drill-down plots | `/satellites/[id]` (Recharts, inline) | 4 |
 | REQ-18 detection log | DETECTION table, `/evaluation` | 2 (write) → 4 (view) |
 | SRS §5.3 / §5.5 roles | `core/security.py`, middleware | 4 |
 | SRS §2.6 docs + help | README, HelpPanel | 6 |

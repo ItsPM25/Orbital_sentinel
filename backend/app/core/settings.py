@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     enable_test_reset: bool = True
     data_dir: Path = REPO_ROOT / "data"
     models_dir: Path = REPO_ROOT / "models"
+    results_dir: Path = REPO_ROOT / "docs" / "results"
 
 
 settings = Settings()

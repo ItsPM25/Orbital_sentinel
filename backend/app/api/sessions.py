@@ -18,6 +18,9 @@ async def start_session(body: StartSessionRequest, _admin: User = Depends(requir
     except session_service.NoTrainedChannels as exc:
         detail = f"No trained channels for {body.satellite_id}"
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail) from exc
+    except session_service.ModelNotRegistered as exc:
+        detail = f"Model {body.model_id} is not registered yet (training may still be running)"
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail) from exc
     except ValueError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
     return SessionStatusOut(satellite_id=body.satellite_id, model_id=body.model_id, running=True)
@@ -44,4 +47,16 @@ def list_sessions(_user: User = Depends(require_roles(Role.ADMINISTRATOR, Role.E
                 counters=c.__dict__ if c else None,
             )
         )
+    # Satellites whose session crashed: not running any more, but still worth showing why.
+    running_ids = {row.satellite_id for row in out}
+    for satellite_id in session_service.list_errored():
+        if satellite_id not in running_ids:
+            out.append(
+                SessionStatusOut(
+                    satellite_id=satellite_id,
+                    model_id="",
+                    running=False,
+                    last_error=session_service.last_error(satellite_id),
+                )
+            )
     return out

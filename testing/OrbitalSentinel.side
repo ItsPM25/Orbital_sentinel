@@ -93,6 +93,37 @@
         { "id": "tc06-10", "comment": "Redirected to login", "command": "waitForElementVisible", "target": "id=loginBtn", "targets": [], "value": "10000" },
         { "id": "tc06-11", "comment": "", "command": "assertElementNotPresent", "target": "id=alertTable", "targets": [], "value": "" }
       ]
+    },
+    {
+      "id": "tc07",
+      "name": "TC07 Analyst cannot reach the admin page",
+      "commands": [
+        { "id": "tc07-01", "comment": "Reset mock data", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc07-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc07-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc07-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc07-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc07-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc07-07", "comment": "Analyst role is redirected away from /admin", "command": "open", "target": "/admin", "targets": [], "value": "" },
+        { "id": "tc07-08", "comment": "Client-side role check sends them back to the dashboard", "command": "waitForElementVisible", "target": "id=alertTable", "targets": [], "value": "10000" },
+        { "id": "tc07-09", "comment": "", "command": "assertElementNotPresent", "target": "id=adminTitle", "targets": [], "value": "" }
+      ]
+    },
+    {
+      "id": "tc08",
+      "name": "TC08 Drill down from an alert to the satellite health panel",
+      "commands": [
+        { "id": "tc08-01", "comment": "Reset mock data", "command": "open", "target": "/api/reset", "targets": [], "value": "" },
+        { "id": "tc08-02", "comment": "", "command": "open", "target": "/login", "targets": [], "value": "" },
+        { "id": "tc08-03", "comment": "", "command": "waitForElementVisible", "target": "id=email", "targets": [], "value": "10000" },
+        { "id": "tc08-04", "comment": "", "command": "type", "target": "id=email", "targets": [], "value": "analyst@orbitalsentinel.test" },
+        { "id": "tc08-05", "comment": "", "command": "type", "target": "id=password", "targets": [], "value": "sentinel123" },
+        { "id": "tc08-06", "comment": "", "command": "click", "target": "id=loginBtn", "targets": [], "value": "" },
+        { "id": "tc08-07", "comment": "", "command": "waitForElementVisible", "target": "id=alertTable", "targets": [], "value": "10000" },
+        { "id": "tc08-08", "comment": "Click the satellite name link on the top alert (REQ-17 drill-down)", "command": "click", "target": "css=#alertTable tbody tr:nth-child(1) .satelliteName a", "targets": [], "value": "" },
+        { "id": "tc08-09", "comment": "", "command": "waitForElementVisible", "target": "id=healthTitle", "targets": [], "value": "10000" },
+        { "id": "tc08-10", "comment": "", "command": "assertText", "target": "id=healthTitle", "targets": [], "value": "SMAP - Health Panel" }
+      ]
     }
   ],
   "suites": [
@@ -102,7 +133,7 @@
       "persistSession": false,
       "parallel": false,
       "timeout": 300,
-      "tests": ["tc01", "tc02", "tc03", "tc04", "tc05", "tc06"]
+      "tests": ["tc01", "tc02", "tc03", "tc04", "tc05", "tc06", "tc07", "tc08"]
     }
   ],
   "urls": ["http://localhost:3001/"],

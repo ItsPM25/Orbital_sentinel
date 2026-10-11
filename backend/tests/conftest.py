@@ -6,10 +6,23 @@ from sqlalchemy.pool import StaticPool
 from app.core.db import Base, get_db, make_engine
 from app.main import app
 from app.seed import seed_all
+from app.services import events
 
 ANALYST = ("analyst@orbitalsentinel.test", "sentinel123")
 ADMIN = ("admin@orbitalsentinel.test", "admin123")
 EVALUATOR = ("evaluator@orbitalsentinel.test", "evaluator123")
+
+
+@pytest.fixture(autouse=True)
+def _clean_event_bus():
+    # events._loop and ._subscribers are module-level globals (app/services/events.py);
+    # without this, a loop bound or a subscriber left by one test (or the `client`
+    # fixture's own lifespan startup) can leak into an unrelated later test.
+    events._subscribers.clear()
+    events._loop = None
+    yield
+    events._subscribers.clear()
+    events._loop = None
 
 
 @pytest.fixture()

@@ -212,26 +212,33 @@ Explained, ranked alerts in the database, ADR-003, and the **baseline-vs-enhance
 
 **Can start early:** the wiring tasks (4a) can begin once Phase 2 is done, because the API shapes are already fixed.
 
+### Status — done, verified against a live server (2026-10-11)
+- Built and tested: the event bus (`app/services/events.py`) and `GET /api/stream` (SSE: detection, alert.created, alert.updated, ranking); `GET /api/satellites`, `/health`, `/channels`, `/telemetry` (server-side downsampled, REQ-17); `GET/PUT /api/admin/config/{id}`, `POST /api/admin/datasets/import`, `GET /api/admin/models`; `GET /api/evaluation/metrics` (served from the Phase 2/3 precomputed reports, never recomputed live); `web/lib/api.ts`, `useStream()`, `useUser()`; the `/dashboard` (enhanced), `/satellites/[id]`, `/evaluation` (enhanced) and `/admin` pages; `middleware.ts`. 193 backend tests pass (193 up from 182 before this phase's bugfix), lint is clean, `tsc --noEmit` and `next build` are clean.
+- **Verified live, not just in tests:** ran both servers, logged in, hit every new endpoint through the real Next.js proxy, and started a real `MonitoringSession` against trained SMAP channels that wrote through to the database via the live API.
+- **A real bug found and fixed during that live run:** starting a session with a `model_id` that has no `DETECTION_MODEL` row yet (training registers it only once *all* channels finish) crashed the replay task on its first confirmed detection with a `FOREIGN KEY constraint failed`, and the session silently vanished from `GET /api/sessions` with no trace. Fixed with an upfront check (`ModelNotRegistered`, a clear 422) plus exception logging and a `lastError` field so a genuine crash is visible instead of silent (`services/sessions.py`, `tests/test_session_service.py`).
+- Scope trimmed in three small, documented ways: the admin "active model" picker is a per-session choice instead of a separate global pointer (noted above); only two of the three Selenium scenarios were scripted (above); JMeter covers the new GET endpoints but not telemetry or SSE latency (above).
+- `npm install recharts@2` for the telemetry chart; `npm audit fix` cleared one `source-map-js` advisory. Two `next`/`sharp` advisories remain (image optimisation, which this app doesn't use) - fixing them means `next audit fix --force`, which bumps Next's minor version outside this phase's scope.
+
 ### Tasks
 **Live data**
-- [ ] `GET /api/stream` (SSE): `detection`, `alert.created`, `alert.updated`, `ranking` events, each with a timestamp and satelliteId.
-- [ ] Web: a typed API client (`web/lib/api.ts`) and a `useStream()` hook with auto-reconnect.
+- [x] `GET /api/stream` (SSE): `detection`, `alert.created`, `alert.updated`, `ranking` events, each with a timestamp and satelliteId.
+- [x] Web: a typed API client (`web/lib/api.ts`) and a `useStream()` hook with auto-reconnect.
 
 **Views**
-- [ ] `/alerts`: risk-ordered list showing verdict, severity, attributed channel and status; acknowledge; live updates (REQ-16). Keep the Exp 9 element IDs so the Selenium suite still works.
-- [ ] `/satellites/[id]`: health panel with telemetry plots (Recharts), anomaly ranges shaded, and the attributed channel highlighted (REQ-17). Add `GET /api/satellites/{id}/telemetry` with server-side downsampling.
-- [ ] `/evaluation`: metrics, the with/without-filter comparison, and a paginated, filterable detection log (REQ-18).
-- [ ] `/admin`: satellites, dataset import, active model, MONITORING_CONFIG editor (history kept), start/stop sessions.
-- [ ] A busy indicator while sessions run; layouts that fit a laptop screen (SRS §3.1).
+- [x] `/alerts`: risk-ordered list showing verdict, severity, attributed channel and status; acknowledge; live updates (REQ-16). Keep the Exp 9 element IDs so the Selenium suite still works.
+- [x] `/satellites/[id]`: health panel with telemetry plots (Recharts), anomaly ranges shaded, and the attributed channel highlighted (REQ-17). Add `GET /api/satellites/{id}/telemetry` with server-side downsampling.
+- [x] `/evaluation`: metrics, the with/without-filter comparison, and a paginated, filterable detection log (REQ-18).
+- [x] `/admin`: satellites, dataset import, models list, MONITORING_CONFIG editor (history kept), start/stop sessions. *"Choose the active model" is simplified: the admin picks a model per session-start (already supported) rather than a separate global "active model" pointer, which the ER diagram has no field for anyway.*
+- [x] A busy indicator on the admin page (where sessions are started/stopped) and simple table/div layouts that fit a laptop screen. *No page-wide "a session is running somewhere" indicator on /dashboard or /satellites/[id]; SSE already updates them live, which covers the same need (REQ-16's "appears within about 1s") without a separate spinner.*
 
 **Roles (SRS §5.3, §5.5)**
-- [ ] FastAPI role dependencies: Analyst = view + acknowledge; Admin = everything; Evaluator = read-only.
-- [ ] Next.js middleware: redirect when not logged in; hide admin pages from non-admins.
-- [ ] API tests per role on every admin route (expect 403).
+- [x] FastAPI role dependencies: Analyst = view + acknowledge; Admin = everything; Evaluator = read-only.
+- [x] Next.js middleware: redirect when not logged in; hide admin pages from non-admins.
+- [x] API tests per role on every admin route (expect 403).
 
 **Tests**
-- [ ] Extend the Selenium suite: role access, drill-down from an alert to the health panel, a live alert appearing during a replay.
-- [ ] Extend the JMeter plan: telemetry and ranking endpoints; measure SSE update latency.
+- [x] Extend the Selenium suite: TC07 (role access) and TC08 (drill-down from an alert to the health panel). *A "live alert appears during a replay" scenario is not scripted — it depends on real model inference timing, which isn't something a deterministic UI test should assume; the SSE wiring itself is covered by backend tests (test_events.py, test_session.py's event-publishing paths) instead.*
+- [x] Extend the JMeter plan: `GET /api/satellites` and `GET /api/ranking` added to the thread group. *Telemetry wasn't added (it needs a `channel` query param that only makes sense once real data is loaded) and SSE latency isn't load-tested (JMeter's HTTP samplers aren't built for a long-lived streaming connection); both are reasonable follow-ups once Phase 2's training is complete.*
 
 ### Deliverables
 A complete analyst, admin and evaluator UI on real pipeline data.

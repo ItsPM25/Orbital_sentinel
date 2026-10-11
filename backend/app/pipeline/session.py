@@ -31,6 +31,7 @@ from app.pipeline.import_dataset import channel_pk
 from app.pipeline.ingest import ReplaySource
 from app.pipeline.lifecycle import DetectionLifecycle, OutcomeKind
 from app.pipeline.types import ChannelScores, SessionCounters, TelemetryWindow
+from app.services import events
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,7 @@ class MonitoringSession:
                     outcome=outcome,
                 )
             )
+            alert_event: tuple[str, str, int] | None = None  # (kind, alert_id, risk_level)
             if outcome == DetectionOutcome.CONFIRMED:
                 self._write_attributions(db, detection_id, scores)
                 if self._open_alert_id is None:
@@ -146,13 +148,30 @@ class MonitoringSession:
                         )
                     )
                     self._open_alert_id = alert_id
+                    alert_event = ("alert.created", alert_id, risk_level)
                 else:
                     open_alert = db.get(Alert, self._open_alert_id)
                     if open_alert is not None and risk_level > open_alert.risk_level:
                         open_alert.risk_level = risk_level
+                        alert_event = ("alert.updated", open_alert.alert_id, risk_level)
             db.commit()
         finally:
             db.close()
+
+        events.publish(
+            "detection",
+            self.satellite_id,
+            {
+                "detectionId": detection_id,
+                "anomalyScore": scores.satellite_score,
+                "severityLevel": severity_level,
+                "outcome": outcome,
+            },
+        )
+        if alert_event is not None:
+            kind, alert_id, risk_level_value = alert_event
+            events.publish(kind, self.satellite_id, {"alertId": alert_id, "riskLevel": risk_level_value})
+            events.publish("ranking", self.satellite_id, {"riskLevel": risk_level_value})
 
     def run(self) -> SessionCounters:
         """Synchronous replay to completion (used directly by tests and the CLI)."""

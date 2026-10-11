@@ -14,6 +14,8 @@
 | TC04 | Dashboard | Alerts are listed in risk order (REQ-16) | 1. Log in 2. Check the alert table | 8 mock alerts | "8 alerts" is shown; row 1 is ALT-001 with risk "10 (CRITICAL)"; the last row is ALT-005 | | |
 | TC05 | Alert | Acknowledging an alert updates its status | 1. Log in 2. Click Acknowledge on ALT-001 | ALT-001 | Status changes from AlertRaised to Acknowledged; the button becomes disabled | | |
 | TC06 | Session | Logout, then direct dashboard access is blocked | 1. Log in 2. Click Logout 3. Open /dashboard directly | — | After logout the login page is shown; opening /dashboard redirects to /login and no alert table is shown | | |
+| TC07 | Roles (Phase 4) | An Analyst cannot reach the admin page | 1. Log in as Analyst 2. Open /admin directly | analyst@orbitalsentinel.test / sentinel123 | Sent back to the dashboard; the admin page's title is never shown (client-side role check, SRS 5.3) | | |
+| TC08 | Drill-down (Phase 4, REQ-17) | Clicking a satellite name on an alert opens its health panel | 1. Log in 2. Click the satellite name on the top alert | — | The health panel for SMAP opens, showing its verdict and risk level | | |
 
 ## Task 2 — Performance test (JMeter, `OrbitalSentinel.jmx`)
 

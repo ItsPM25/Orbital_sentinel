@@ -49,6 +49,7 @@ export interface AlertView extends Alert {
   riskLabel: SeverityLevel;
   severityLevel: SeverityLevel;
   anomalyScore: number;
+  attributedChannel: string | null; // REQ-16/REQ-7: the top attributed channel, or null ("unknown")
 }
 
 // Detection joined with its Satellite, as served by GET /api/detections (REQ-18).

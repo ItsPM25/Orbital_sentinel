@@ -21,3 +21,4 @@ class SessionStatusOut(CamelModel):
     model_id: str
     running: bool
     counters: SessionCountersOut | None = None
+    last_error: str | None = None

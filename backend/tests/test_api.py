@@ -63,6 +63,7 @@ def test_req16_alerts_are_risk_ordered(client):
         "riskLabel": "CRITICAL",
         "severityLevel": "CRITICAL",
         "anomalyScore": 0.97,
+        "attributedChannel": None,  # demo seed data has no ATTRIBUTION rows
     }
 
 

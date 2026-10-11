@@ -30,6 +30,7 @@ def test_start_session_success(client, monkeypatch):
         "modelId": "MDL-LSTM-100-80",
         "running": True,
         "counters": None,
+        "lastError": None,
     }
 
 
@@ -108,3 +109,40 @@ def test_detections_lists_the_seeded_demo_detections(client):
 def test_detections_any_role_can_read(client):
     login(client, EVALUATOR)
     assert client.get("/api/detections").status_code == 200
+
+
+def test_start_session_unregistered_model_is_422(client, monkeypatch):
+    async def fake_start(*a, **kw):
+        raise session_service.ModelNotRegistered("MDL-NOT-YET")
+
+    monkeypatch.setattr(session_service, "start_session", AsyncMock(side_effect=fake_start))
+    login(client, ADMIN)
+    res = client.post("/api/sessions", json={"satelliteId": "SAT-001", "modelId": "MDL-NOT-YET"})
+    assert res.status_code == 422
+    assert "not registered" in res.json()["error"]
+
+
+def test_list_sessions_includes_a_crashed_satellite_with_its_error(client, monkeypatch):
+    monkeypatch.setattr(session_service, "list_running", lambda: [])
+    monkeypatch.setattr(session_service, "list_errored", lambda: ["SAT-001"])
+    monkeypatch.setattr(
+        session_service, "last_error", lambda sat: "IntegrityError: FOREIGN KEY constraint failed"
+    )
+    login(client, ADMIN)
+    res = client.get("/api/sessions")
+    body = res.json()
+    assert len(body) == 1
+    assert body[0]["satelliteId"] == "SAT-001"
+    assert body[0]["running"] is False
+    assert "IntegrityError" in body[0]["lastError"]
+
+
+def test_list_sessions_prefers_running_over_a_stale_crash_entry(client, monkeypatch):
+    monkeypatch.setattr(session_service, "list_running", lambda: ["SAT-001"])
+    monkeypatch.setattr(session_service, "counters", lambda sat: None)
+    monkeypatch.setattr(session_service, "list_errored", lambda: ["SAT-001"])
+    login(client, ADMIN)
+    res = client.get("/api/sessions")
+    body = res.json()
+    assert len(body) == 1
+    assert body[0]["running"] is True

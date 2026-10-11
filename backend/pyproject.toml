@@ -15,3 +15,4 @@ ignore = ["B008"]  # FastAPI's Depends() in argument defaults
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"
