@@ -6,7 +6,19 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api import admin, alerts, auth, detections, dev, evaluation, ranking, satellites, sessions, stream, tle
+from app.api import (
+    admin,
+    alerts,
+    auth,
+    detections,
+    dev,
+    evaluation,
+    ranking,
+    satellites,
+    sessions,
+    stream,
+    tle,
+)
 from app.core.settings import settings
 from app.services import events
 

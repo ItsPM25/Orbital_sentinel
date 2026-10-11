@@ -71,13 +71,16 @@ export function orbitTrail(
 }
 
 /**
- * Risk colour mapping — matches ARCHITECTURE.md §5.6 (REQ-14)
+ * Risk colour mapping — matches ARCHITECTURE.md §5.6 (REQ-14).
+ * The numeric riskLevel fallback bands mirror risk_label() in
+ * backend/app/pipeline/explain/severity.py exactly (>=9/>=6/>=4), so a
+ * missing severityLevel string still colours consistently with the backend.
  */
 export function riskColour(riskLevel: number | null, severityLevel: string | null): string {
   if (!riskLevel && !severityLevel) return "#22c55e"; // green — nominal
   const severity = severityLevel?.toUpperCase();
   if (severity === "CRITICAL" || (riskLevel ?? 0) >= 9) return "#ef4444"; // red
-  if (severity === "HIGH" || (riskLevel ?? 0) >= 7) return "#f97316"; // orange
+  if (severity === "HIGH" || (riskLevel ?? 0) >= 6) return "#f97316"; // orange
   if (severity === "MEDIUM" || (riskLevel ?? 0) >= 4) return "#eab308"; // amber
   return "#22c55e"; // green — LOW
 }

@@ -27,7 +27,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.tracking.celestrak import _REFRESH_INTERVAL, _is_stale, get_tle_data
+from app.tracking.celestrak import _is_stale, get_tle_data
 from app.tracking.snapshot_tles import SNAPSHOT
 
 # ---------------------------------------------------------------------------
@@ -46,11 +46,13 @@ EPOCH = datetime(2026, 10, 11, 12, 0, 0, tzinfo=timezone.utc)
 # ---------------------------------------------------------------------------
 
 def _sgp4_position(tle1: str, tle2: str, when: datetime) -> tuple[float, float, float]:
-    """Propagate a TLE with the pure-Python sgp4 library.
+    """Propagate a TLE with the pure-Python ``sgp4`` package (PyPI) as an
+    independent reference implementation of the same SGP4 algorithm
+    satellite.js runs in the browser (they are unrelated packages in
+    unrelated ecosystems; this is a cross-check, not a shared dependency).
 
-    Returns the ECI position (x, y, z) in km.
-    We use the ``sgp4`` package (installed as a transitive dep of satellite.js
-    via the Python ecosystem; if not present the test is skipped gracefully).
+    Returns the ECI position (x, y, z) in km. Dev-only test dependency
+    (requirements.txt); skipped gracefully if not installed.
     """
     try:
         from sgp4.api import Satrec, jday  # type: ignore[import]
@@ -58,7 +60,8 @@ def _sgp4_position(tle1: str, tle2: str, when: datetime) -> tuple[float, float, 
         pytest.skip("sgp4 Python package not installed — install it to run this test")
 
     sat = Satrec.twoline2rv(tle1, tle2)
-    jd, fr = jday(when.year, when.month, when.day, when.hour, when.minute, when.second + when.microsecond / 1e6)
+    seconds = when.second + when.microsecond / 1e6
+    jd, fr = jday(when.year, when.month, when.day, when.hour, when.minute, seconds)
     e, r, _ = sat.sgp4(jd, fr)
     assert e == 0, f"SGP4 propagation error code {e}"
     return tuple(r)  # type: ignore[return-value]
