@@ -11,9 +11,11 @@ from sqlalchemy.orm import Session
 from app.core.settings import settings
 from app.models import Channel, Satellite, TelemetryReading
 from app.pipeline.dataset import anomaly_mask, load_channel, load_labels
+from app.pipeline.fleet import build_fleet_channel_map
 from app.pipeline.ingest import REPLAY_EPOCH
 
-# Temporary mapping until ADR-004 (fleet + proxies). SMAP is real; MSL rides on Aqua.
+# Fallback used only when a channel has no entry in the per-channel map below
+# (e.g. a caller passes a custom spacecraft-keyed map, as the tests do).
 DEFAULT_SATELLITE_FOR_SPACECRAFT = {"SMAP": "SAT-001", "MSL": "SAT-002"}
 CHUNK = 2000
 
@@ -29,15 +31,18 @@ def import_dataset(
     include_readings: bool = False,
     satellite_map: dict[str, str] | None = None,
 ) -> dict:
+    """satellite_map may be keyed by dataset_chan_id (the ADR-004 fleet split,
+    the default) or by spacecraft name (a coarser override, e.g. in tests);
+    a channel is resolved against the per-channel key first."""
     data_dir = data_dir or settings.data_dir
-    satellite_map = satellite_map or DEFAULT_SATELLITE_FOR_SPACECRAFT
+    satellite_map = satellite_map or build_fleet_channel_map(data_dir)
     labels = load_labels(data_dir)
     created_channels = 0
     updated_channels = 0
     readings = 0
 
     for chan_id, label in labels.items():
-        satellite_id = satellite_map.get(label.spacecraft)
+        satellite_id = satellite_map.get(chan_id) or satellite_map.get(label.spacecraft)
         if satellite_id is None or db.get(Satellite, satellite_id) is None:
             continue
         pk = channel_pk(chan_id)

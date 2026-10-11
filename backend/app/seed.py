@@ -63,6 +63,19 @@ def _demo_time(hhmm: str, second: int) -> datetime:
     return datetime(2026, 9, 23, hour, minute, second, tzinfo=timezone.utc)
 
 
+def _telemetry_sources() -> dict[str, str]:
+    """ADR-004's fleet channel split, summarised per satellite for the honest-framing
+    badge (SRS 2.7). Falls back to a generic note if the dataset isn't downloaded yet
+    (scripts/get_data) - seeding must not fail just because data/ is missing."""
+    try:
+        from app.pipeline.fleet import build_fleet_channel_map, telemetry_source_summary
+
+        fleet_map = build_fleet_channel_map()
+        return {sat_id: telemetry_source_summary(sat_id, fleet_map) for sat_id, *_ in SATELLITES}
+    except (FileNotFoundError, OSError):
+        return {}
+
+
 def seed_reference(db: Session) -> None:
     """Users, satellites, the demo model and default monitoring configs. Safe to rerun."""
     for user_id, first, last, role, email, password in USERS:
@@ -78,14 +91,23 @@ def seed_reference(db: Session) -> None:
                 )
             )
 
+    telemetry_sources = _telemetry_sources()
     for satellite_id, name, norad_id, is_proxy, tag in SATELLITES:
-        if db.get(Satellite, satellite_id) is None:
+        existing = db.get(Satellite, satellite_id)
+        source = telemetry_sources.get(satellite_id, "dataset not imported yet")
+        if existing is not None:
+            # Refreshable on rerun: the fleet channel split (ADR-004) can change
+            # across versions, and a satellite seeded before data/ was imported
+            # would otherwise be stuck showing "dataset not imported yet" forever.
+            existing.telemetry_source = source
+        else:
             db.add(
                 Satellite(
                     satellite_id=satellite_id,
                     name=name,
                     norad_id=norad_id,
                     is_proxy=is_proxy,
+                    telemetry_source=source,
                     mission_tags=[SatelliteMissionTag(mission_tag=tag)],
                 )
             )

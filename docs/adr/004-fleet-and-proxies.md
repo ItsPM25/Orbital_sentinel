@@ -42,12 +42,25 @@ positions via SGP4 propagation in the browser (satellite.js).
 ### Channel subsets (proxy mapping)
 
 Each proxy must contain **at least one labelled anomaly** (PHASES.md §5a requirement).
-The exact channel assignment is managed in `app/seed.py` via the `telemetry_source` field
-of the `SATELLITE` table.  The mapping is documented there; this ADR records the policy.
+Trivially true here: every row in `labeled_anomalies.csv` has at least one anomaly
+sequence by construction, so any non-empty split satisfies it.
 
-- Subsets are **disjoint**: no channel appears in more than one satellite's replay profile.
-- Each subset is drawn so the difficulty mix (anomaly density, error scale) is similar
-  across satellites.
+The split is computed deterministically by `backend/app/pipeline/fleet.py`
+(`build_fleet_channel_map()`): SMAP's 54 labelled channels are sorted alphabetically
+and cut into 3 contiguous, near-equal chunks (SAT-001, SAT-003, SAT-004); MSL's 27
+into 2 chunks (SAT-002, SAT-005). `import_dataset()` uses this as its default
+`satellite_map`, keyed by `chan_id` (resolved before the coarser spacecraft-level
+fallback, so a caller can still override by spacecraft, as the unit tests do).
+`app/seed.py` reads the same map at seed time to fill `Satellite.telemetry_source`
+with a short summary (e.g. `"SMAP channels: A-1, A-2, A-3, ... (18 total)"`) for the
+health panel's "Replayed telemetry" badge.
+
+- Subsets are **disjoint** by construction (`_chunk()` partitions the sorted list once;
+  no channel is assigned twice).
+- The split is alphabetical, not difficulty-balanced — a straightforward, reproducible
+  choice over hand-picking a "similar difficulty mix" per satellite, which would need
+  a difficulty metric this project doesn't otherwise define. Good enough for a globe
+  demo; revisit if a specific satellite's detections look too sparse in practice.
 
 ### Honest-framing rules
 
