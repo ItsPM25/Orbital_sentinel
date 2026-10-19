@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Orbital Sentinel theme. A flight-operations console, not a marketing page:
+ * warm paper and ink in light mode, graphite in dark mode, flat 1px borders,
+ * 4px corners, no gradients, glass or glow. Saturated colour is reserved for
+ * meaning: the four risk bands (mirroring risk_label() in
+ * backend/app/pipeline/explain/severity.py) and destructive actions.
+ */
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-risk-critical: var(--risk-critical);
+  --color-risk-high: var(--risk-high);
+  --color-risk-medium: var(--risk-medium);
+  --color-risk-low: var(--risk-low);
+  --color-risk-none: var(--risk-none);
+
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2);
+}
+
+:root {
+  --radius: 0.25rem;
+
+  --background: #f4f3ef;
+  --foreground: #15171c;
+  --card: #ffffff;
+  --card-foreground: #15171c;
+  --popover: #ffffff;
+  --popover-foreground: #15171c;
+  --primary: #15171c;
+  --primary-foreground: #f4f3ef;
+  --secondary: #e8e6e0;
+  --secondary-foreground: #15171c;
+  --muted: #ebe9e3;
+  --muted-foreground: #5a606c;
+  --accent: #e8e6e0;
+  --accent-foreground: #15171c;
+  --destructive: #b42318;
+  --border: #dad7cf;
+  --input: #cbc7bd;
+  --ring: #15171c;
+
+  --chart-1: #15171c;
+  --chart-2: #5a606c;
+  --chart-3: #8f949c;
+  --chart-4: #b9bcc1;
+  --chart-5: #dad7cf;
+
+  --sidebar: #ebe9e3;
+  --sidebar-foreground: #15171c;
+  --sidebar-primary: #15171c;
+  --sidebar-primary-foreground: #f4f3ef;
+  --sidebar-accent: #dfdcd4;
+  --sidebar-accent-foreground: #15171c;
+  --sidebar-border: #dad7cf;
+  --sidebar-ring: #15171c;
+
+  /* Risk bands. Text-safe on --card and --background (WCAG AA at 14px+). */
+  --risk-critical: #b8322a;
+  --risk-high: #b5560f;
+  --risk-medium: #8a6a00;
+  --risk-low: #3a7148;
+  --risk-none: #6f7580;
+}
+
+.dark {
+  --background: #0f1114;
+  --foreground: #e8e6e1;
+  --card: #15181d;
+  --card-foreground: #e8e6e1;
+  --popover: #1a1d23;
+  --popover-foreground: #e8e6e1;
+  --primary: #e8e6e1;
+  --primary-foreground: #0f1114;
+  --secondary: #1f232a;
+  --secondary-foreground: #e8e6e1;
+  --muted: #1c2026;
+  --muted-foreground: #9aa0aa;
+  --accent: #232830;
+  --accent-foreground: #e8e6e1;
+  --destructive: #f0645a;
+  --border: #2a2f37;
+  --input: #363c46;
+  --ring: #e8e6e1;
+
+  --chart-1: #e8e6e1;
+  --chart-2: #9aa0aa;
+  --chart-3: #6b717b;
+  --chart-4: #474d57;
+  --chart-5: #2a2f37;
+
+  --sidebar: #0b0d10;
+  --sidebar-foreground: #e8e6e1;
+  --sidebar-primary: #e8e6e1;
+  --sidebar-primary-foreground: #0f1114;
+  --sidebar-accent: #1c2026;
+  --sidebar-accent-foreground: #e8e6e1;
+  --sidebar-border: #22262d;
+  --sidebar-ring: #e8e6e1;
+
+  --risk-critical: #f0645a;
+  --risk-high: #f08c3c;
+  --risk-medium: #e2bd45;
+  --risk-low: #6fbf86;
+  --risk-none: #868c96;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/60;
+  }
+  html {
+    @apply font-sans;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern", "liga";
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Numbers, IDs and timestamps: monospaced and tabular so columns line up. */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+}
+
+/* globe.gl hover tooltips. The globe is always drawn dark, so fixed colours. */
+.float-tooltip-kap {
+  padding: 0 !important;
+  background: transparent !important;
+}
+.globe-tip {
+  font: 12px/1.4 var(--font-sans);
+  background: #15181d;
+  color: #e8e6e1;
+  border: 1px solid #2a2f37;
+  border-radius: 3px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.globe-tip span {
+  font-family: var(--font-mono);
+  color: #9aa0aa;
+}
