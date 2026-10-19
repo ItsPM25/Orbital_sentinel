@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     data_dir: Path = REPO_ROOT / "data"
     models_dir: Path = REPO_ROOT / "models"
     results_dir: Path = REPO_ROOT / "docs" / "results"
+    # Live monitoring pace: replay windows per second per satellite. 0 replays as
+    # fast as the CPU allows, which pins every core until the replay ends.
+    replay_windows_per_second: float = 1.0
+    # PyTorch defaults to one thread per logical CPU for each running session;
+    # several sessions at once then oversubscribe the machine.
+    inference_threads: int = 2
 
 
 settings = Settings()

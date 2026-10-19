@@ -161,6 +161,31 @@ def test_window_scoring_is_well_under_one_second(session_factory):
     assert session.counters.last_score_ms < 1000
 
 
+def test_paced_replay_spaces_windows_instead_of_running_flat_out(session_factory):
+    """A full-speed replay pins every CPU core until it ends; live monitoring is paced."""
+    import asyncio
+    import time
+
+    def run(windows_per_second):
+        windows = [fake_window("SAT-001", i, i * 70, i * 70 + 70) for i in range(5)]
+        session = MonitoringSession(
+            satellite_id="SAT-001",
+            model_id=MODEL_ID,
+            detector=ScriptedDetector([0.1] * 5, threshold=1.0),
+            source=FakeSource(windows),
+            db_factory=session_factory,
+        )
+        started = time.perf_counter()
+        counters = asyncio.run(session.run_async(windows_per_second))
+        return time.perf_counter() - started, counters.windows
+
+    paced, paced_windows = run(20.0)  # 5 windows at 20/s: about 0.25s
+    flat_out, flat_windows = run(None)
+    assert paced_windows == flat_windows == 5
+    assert paced >= 0.24
+    assert flat_out < paced
+
+
 # --- Phase 3: episode escalation, attribution ---------------------------------------------
 
 

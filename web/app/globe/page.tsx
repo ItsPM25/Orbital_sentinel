@@ -13,11 +13,12 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import type { TleEntry } from "@/lib/sgp4";
 import { riskColour } from "@/lib/sgp4";
 import type { SatelliteRanking } from "@/lib/api";
+import { useCoalesced } from "@/lib/useCoalesced";
 import { useStream } from "@/lib/useStream";
 import type { SatelliteHealth } from "@/lib/api";
 import styles from "./globe.module.css";
@@ -155,14 +156,17 @@ export default function GlobePage() {
   }, [loadAll]);
 
   // REQ-14: update risk colours live from SSE ranking events
+  const scheduleRankingReload = useCoalesced(() => {
+    api.ranking().then(setRanking).catch(() => {});
+  });
   useStream((evt) => {
-    if (evt.event === "ranking") {
-      api.ranking().then(setRanking).catch(() => {});
-    }
+    if (evt.event === "ranking") scheduleRankingReload();
   });
 
   // Build a risk-map keyed by satelliteId for fast colour lookup
-  const riskMap = new Map(ranking.map((r) => [r.satelliteId, r]));
+  // Memoised: GlobeCanvas rebuilds every orbit-trail mesh when this identity changes,
+  // so a fresh Map on every render meant a full rebuild on every re-render.
+  const riskMap = useMemo(() => new Map(ranking.map((r) => [r.satelliteId, r])), [ranking]);
 
   return (
     <div className={styles.page}>

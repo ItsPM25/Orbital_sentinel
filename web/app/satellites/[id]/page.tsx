@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api, ApiError, type Channel, type SatelliteHealth, type TelemetrySeries } from "@/lib/api";
+import { useCoalesced } from "@/lib/useCoalesced";
 import { useStream } from "@/lib/useStream";
 
 // Recharts needs one row per point; anomaly ranges are rendered as a shaded Area
@@ -56,11 +57,13 @@ export default function SatelliteHealthPage() {
     api.satelliteTelemetry(satelliteId, selectedChannel).then(setSeries).catch(() => setSeries(null));
   }, [satelliteId, selectedChannel]);
 
+  // Every detection for this satellite is an event; refresh at most every 2s.
+  const scheduleRefresh = useCoalesced(() => {
+    loadHealth();
+    if (selectedChannel) api.satelliteTelemetry(satelliteId, selectedChannel).then(setSeries).catch(() => {});
+  }, 2000);
   useStream((evt) => {
-    if (evt.satelliteId === satelliteId) {
-      loadHealth();
-      if (selectedChannel) api.satelliteTelemetry(satelliteId, selectedChannel).then(setSeries).catch(() => {});
-    }
+    if (evt.satelliteId === satelliteId) scheduleRefresh();
   });
 
   if (error) return <p id="healthError">{error}</p>;

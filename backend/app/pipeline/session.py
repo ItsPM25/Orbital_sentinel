@@ -181,14 +181,18 @@ class MonitoringSession:
             self._process_window(window)
         return self.counters
 
-    async def run_async(self, yield_every: int = 1) -> SessionCounters:
-        """Same replay, yielding control to the event loop between windows."""
+    async def run_async(self, windows_per_second: float | None = None) -> SessionCounters:
+        """Same replay, run off the event loop. With windows_per_second, windows are
+        spaced on a fixed schedule (a slow window eats into the next one's wait
+        rather than pushing the whole schedule back); None replays flat out."""
+        loop = asyncio.get_running_loop()
+        interval = 1.0 / windows_per_second if windows_per_second else 0.0
+        started = time.monotonic()
         for i, window in enumerate(self.source.windows()):
             if self._stop:
                 break
-            await asyncio.get_running_loop().run_in_executor(None, self._process_window, window)
-            if i % yield_every == 0:
-                await asyncio.sleep(0)
+            await loop.run_in_executor(None, self._process_window, window)
+            await asyncio.sleep(max(0.0, started + (i + 1) * interval - time.monotonic()))
         return self.counters
 
 

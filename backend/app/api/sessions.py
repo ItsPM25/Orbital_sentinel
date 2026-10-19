@@ -42,7 +42,7 @@ def list_sessions(_user: User = Depends(require_roles(Role.ADMINISTRATOR, Role.E
         out.append(
             SessionStatusOut(
                 satellite_id=satellite_id,
-                model_id="",
+                model_id=session_service.model_id(satellite_id) or "",
                 running=True,
                 counters=c.__dict__ if c else None,
             )

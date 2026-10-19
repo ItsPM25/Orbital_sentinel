@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { AlertView } from "@/lib/entities";
+import { useCoalesced } from "@/lib/useCoalesced";
 import { useStream } from "@/lib/useStream";
 
 export default function DashboardPage() {
@@ -26,9 +27,10 @@ export default function DashboardPage() {
   }, [reload]);
 
   // REQ-16 live updates: a new or escalated alert, or a fresh detection, refreshes the list.
+  const scheduleReload = useCoalesced(reload);
   useStream((evt) => {
     if (evt.event === "alert.created" || evt.event === "alert.updated" || evt.event === "ranking") {
-      reload();
+      scheduleReload();
     }
   });
 

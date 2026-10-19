@@ -101,10 +101,15 @@ export default function GlobeCanvas({ tles, riskMap, onSelectSatellite, selected
     if (!mountRef.current) return;
 
     let trailInterval: ReturnType<typeof setInterval> | null = null;
+    // Set by cleanup. The import below is async, so cleanup can run before the globe
+    // exists (React StrictMode mounts effects twice in dev); without this flag that
+    // first globe was still created afterwards and rendered forever, unowned.
+    let cancelled = false;
 
     const initGlobe = async () => {
       // Dynamic import keeps globe.gl out of the SSR bundle
       const GlobeModule = await import("globe.gl");
+      if (cancelled || !mountRef.current) return;
       // globe.gl exports a constructor; calling it with `new` or as a factory both work
       // depending on the version. Use the default export directly as a constructor.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,8 +120,8 @@ export default function GlobeCanvas({ tles, riskMap, onSelectSatellite, selected
 
       // Earth appearance
       globe
-        .globeImageUrl("//unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
-        .bumpImageUrl("//unpkg.com/three-globe/example/img/earth-topology.png")
+        .globeImageUrl("/textures/earth-blue-marble.jpg")
+        .bumpImageUrl("/textures/earth-topology.png")
         .atmosphereColor("rgba(63, 201, 255, 0.5)")
         .atmosphereAltitude(0.2)
         .backgroundColor("rgba(2, 8, 23, 0)")
@@ -171,11 +176,13 @@ export default function GlobeCanvas({ tles, riskMap, onSelectSatellite, selected
     initGlobe().catch(console.error);
 
     return () => {
+      cancelled = true;
       if (tickRef.current) clearInterval(tickRef.current);
       if (trailInterval) clearInterval(trailInterval);
-      if (globeRef.current?.renderer) {
-        globeRef.current.renderer()?.dispose?.();
-      }
+      // _destructor stops globe.gl's requestAnimationFrame loop and frees its WebGL
+      // context; disposing only the renderer left the loop running after navigation.
+      globeRef.current?._destructor?.();
+      globeRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Intentionally empty: globe.gl is imperative; we update it via refs and the effects below.

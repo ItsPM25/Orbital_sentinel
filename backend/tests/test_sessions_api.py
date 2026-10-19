@@ -64,6 +64,16 @@ def test_start_session_no_trained_channels_is_422(client, monkeypatch):
     assert res.status_code == 422
 
 
+def test_list_sessions_reports_the_running_model_id(client, monkeypatch):
+    monkeypatch.setattr(session_service, "list_running", lambda: ["SAT-001"])
+    monkeypatch.setattr(session_service, "model_id", lambda _sat: "MDL-LSTM-100-80")
+    monkeypatch.setattr(session_service, "counters", lambda _sat: None)
+    monkeypatch.setattr(session_service, "list_errored", lambda: [])
+    login(client, ADMIN)
+    rows = client.get("/api/sessions").json()
+    assert [(r["satelliteId"], r["modelId"]) for r in rows] == [("SAT-001", "MDL-LSTM-100-80")]
+
+
 def test_stop_session_not_running_is_404(client, monkeypatch):
     monkeypatch.setattr(session_service, "stop_session", AsyncMock(return_value=False))
     login(client, ADMIN)

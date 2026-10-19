@@ -59,6 +59,11 @@ def counters(satellite_id: str):
     return entry.session.counters if entry else None
 
 
+def model_id(satellite_id: str) -> str | None:
+    entry = _running.get(satellite_id)
+    return entry.model_id if entry else None
+
+
 def list_running() -> list[str]:
     return sorted(_running)
 
@@ -86,13 +91,16 @@ def _on_task_done(satellite_id: str, task: asyncio.Task) -> None:
 def _build_detector(model_id: str, chan_ids: list[str]):
     # Imported lazily: constructing an LstmDetector imports torch, which the
     # plain API tests should not need to have installed.
+    import torch
+
     from app.pipeline.detect import LstmDetector
 
+    torch.set_num_threads(settings.inference_threads)
     return LstmDetector(settings.models_dir / model_id, chan_ids)
 
 
 async def start_session(satellite_id: str, model_id: str, speed: float | None = None) -> MonitoringSession:
-    """speed: windows per second to simulate real-time pacing; None replays as fast as possible."""
+    """speed: windows per second (defaults to settings.replay_windows_per_second); 0 replays flat out."""
     if satellite_id in _running:
         raise SessionAlreadyRunning(satellite_id)
 
@@ -129,7 +137,8 @@ async def start_session(satellite_id: str, model_id: str, speed: float | None = 
         persistence_n=persistence_n,
         severity_threshold=severity_threshold,
     )
-    task = asyncio.create_task(session.run_async(), name=f"monitor-{satellite_id}")
+    pace = settings.replay_windows_per_second if speed is None else speed
+    task = asyncio.create_task(session.run_async(pace or None), name=f"monitor-{satellite_id}")
     _running[satellite_id] = RunningSession(satellite_id, model_id, session, task)
     _last_error.pop(satellite_id, None)
     task.add_done_callback(lambda t: _on_task_done(satellite_id, t))
