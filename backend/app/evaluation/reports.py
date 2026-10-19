@@ -30,6 +30,8 @@ from app.pipeline.ingest import repair_series
 from app.pipeline.lstm import load_channel_model, prediction_errors
 from app.pipeline.train import DEFAULT_MODEL_ID
 
+FlagsByChannel = dict[str, tuple[np.ndarray, ChannelLabel]]
+
 
 def slice_label(label: ChannelLabel, lo: int, hi: int) -> ChannelLabel:
     """Keeps only anomaly sequences that start within [lo, hi), re-indexed to the slice."""
@@ -52,11 +54,17 @@ def channel_flags(chan_id: str, model_id: str) -> tuple[np.ndarray, ChannelLabel
     return flags, load_labels()[chan_id]
 
 
-def sweep_persistence(channels: list[str], model_id: str, candidates: list[int]) -> dict:
+def load_all_flags(channels: list[str], model_id: str) -> FlagsByChannel:
+    """Runs inference once per channel. LSTM inference over a full test split is the
+    expensive step (the rest of this module is cheap array slicing), so the sweep and
+    the comparison share this instead of each recomputing it from scratch."""
+    return {chan_id: channel_flags(chan_id, model_id) for chan_id in channels}
+
+
+def sweep_persistence(flags_by_channel: FlagsByChannel, candidates: list[int]) -> dict:
     """Metrics for each candidate persistence_n on each channel's TUNING half (first half)."""
     per_candidate: dict[int, list[dict]] = {n: [] for n in candidates}
-    for chan_id in channels:
-        flags, label = channel_flags(chan_id, model_id)
+    for flags, label in flags_by_channel.values():
         mid = len(flags) // 2
         tuning_flags, tuning_label = flags[:mid], slice_label(label, 0, mid)
         for n in candidates:
@@ -65,11 +73,10 @@ def sweep_persistence(channels: list[str], model_id: str, candidates: list[int])
     return {n: aggregate(rows) for n, rows in per_candidate.items()}
 
 
-def compare_on_reporting_half(channels: list[str], model_id: str, chosen_n: int) -> dict:
+def compare_on_reporting_half(flags_by_channel: FlagsByChannel, chosen_n: int) -> dict:
     """With (chosen_n) vs. without (n=1) the filter, on each channel's REPORTING half (second half)."""
     without_rows, with_rows = [], []
-    for chan_id in channels:
-        flags, label = channel_flags(chan_id, model_id)
+    for flags, label in flags_by_channel.values():
         mid = len(flags) // 2
         reporting_flags, reporting_label = flags[mid:], slice_label(label, mid, len(flags))
         without_rows.append(evaluate_channel(reporting_flags, reporting_label))
@@ -137,13 +144,14 @@ def main() -> None:
     manifest = json.loads((settings.models_dir / args.model_id / "manifest.json").read_text(encoding="utf-8"))
     channels = args.channels or manifest["channels"]
 
-    sweep = sweep_persistence(channels, args.model_id, args.sweep)
+    flags_by_channel = load_all_flags(channels, args.model_id)
+    sweep = sweep_persistence(flags_by_channel, args.sweep)
     for n, m in sorted(sweep.items()):
         print(f"persistence_n={n}: {m}")
     chosen_n = max(sweep, key=lambda n: sweep[n]["f1"])
     print(f"Chosen persistence_n = {chosen_n}")
 
-    comparison = compare_on_reporting_half(channels, args.model_id, chosen_n)
+    comparison = compare_on_reporting_half(flags_by_channel, chosen_n)
     print("Reporting-half comparison:", comparison)
 
     if args.out:

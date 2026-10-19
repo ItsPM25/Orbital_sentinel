@@ -1,0 +1,871 @@
+{
+ "model_id": "MDL-LSTM-100-80",
+ "hyperparams": {
+  "history": 100,
+  "horizon": 10,
+  "hidden": 80,
+  "layers": 2,
+  "dropout": 0.3,
+  "lr": 0.001,
+  "batch": 64,
+  "max_epochs": 20,
+  "patience": 3,
+  "min_delta": 0.0003,
+  "validation_share": 0.2,
+  "ewma_span": 105,
+  "threshold_window": 2100,
+  "threshold_step": 70,
+  "error_buffer": 100,
+  "prune_p": 0.13,
+  "z_values": [
+   2.5,
+   12.0
+  ]
+ },
+ "channels_evaluated": 81,
+ "eval_seconds": 2065.2,
+ "overall": {
+  "channels": 81,
+  "tp": 71,
+  "fn": 33,
+  "fp": 33,
+  "precision": 0.6827,
+  "recall": 0.6827,
+  "f1": 0.6827,
+  "point_fpr": 0.02243
+ },
+ "by_spacecraft": {
+  "MSL": {
+   "channels": 27,
+   "tp": 23,
+   "fn": 13,
+   "fp": 14,
+   "precision": 0.6216,
+   "recall": 0.6389,
+   "f1": 0.6301,
+   "point_fpr": 0.06191
+  },
+  "SMAP": {
+   "channels": 54,
+   "tp": 48,
+   "fn": 20,
+   "fp": 19,
+   "precision": 0.7164,
+   "recall": 0.7059,
+   "f1": 0.7111,
+   "point_fpr": 0.01557
+  }
+ },
+ "per_channel": [
+  {
+   "chan_id": "A-1",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 8555,
+   "total_points": 8640
+  },
+  {
+   "chan_id": "A-2",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 127,
+   "normal_points": 7803,
+   "total_points": 7914
+  },
+  {
+   "chan_id": "A-3",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 103,
+   "normal_points": 8019,
+   "total_points": 8205
+  },
+  {
+   "chan_id": "A-4",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 156,
+   "normal_points": 7969,
+   "total_points": 8080
+  },
+  {
+   "chan_id": "A-5",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 299,
+   "normal_points": 4642,
+   "total_points": 4693
+  },
+  {
+   "chan_id": "A-6",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 141,
+   "normal_points": 4412,
+   "total_points": 4453
+  },
+  {
+   "chan_id": "A-7",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 133,
+   "normal_points": 6230,
+   "total_points": 8631
+  },
+  {
+   "chan_id": "A-8",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 2,
+   "fp_points": 106,
+   "normal_points": 4569,
+   "total_points": 8375
+  },
+  {
+   "chan_id": "A-9",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 4569,
+   "total_points": 8434
+  },
+  {
+   "chan_id": "B-1",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 289,
+   "normal_points": 7973,
+   "total_points": 8044
+  },
+  {
+   "chan_id": "C-1",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 30,
+   "normal_points": 1952,
+   "total_points": 2264
+  },
+  {
+   "chan_id": "C-2",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 120,
+   "normal_points": 1914,
+   "total_points": 2051
+  },
+  {
+   "chan_id": "D-1",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 40,
+   "normal_points": 5250,
+   "total_points": 8509
+  },
+  {
+   "chan_id": "D-11",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 249,
+   "normal_points": 7370,
+   "total_points": 7431
+  },
+  {
+   "chan_id": "D-12",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 5178,
+   "total_points": 7918
+  },
+  {
+   "chan_id": "D-13",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 259,
+   "normal_points": 7502,
+   "total_points": 7663
+  },
+  {
+   "chan_id": "D-14",
+   "spacecraft": "MSL",
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 285,
+   "normal_points": 2403,
+   "total_points": 2625
+  },
+  {
+   "chan_id": "D-15",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 1517,
+   "total_points": 2158
+  },
+  {
+   "chan_id": "D-16",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 10,
+   "normal_points": 1540,
+   "total_points": 2191
+  },
+  {
+   "chan_id": "D-2",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 4377,
+   "total_points": 8595
+  },
+  {
+   "chan_id": "D-3",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 5364,
+   "total_points": 8640
+  },
+  {
+   "chan_id": "D-4",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 15,
+   "normal_points": 5225,
+   "total_points": 8473
+  },
+  {
+   "chan_id": "D-5",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7577,
+   "total_points": 7628
+  },
+  {
+   "chan_id": "D-6",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 96,
+   "normal_points": 7803,
+   "total_points": 7884
+  },
+  {
+   "chan_id": "D-7",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 4940,
+   "total_points": 7642
+  },
+  {
+   "chan_id": "D-8",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7823,
+   "total_points": 7874
+  },
+  {
+   "chan_id": "D-9",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 6250,
+   "total_points": 7406
+  },
+  {
+   "chan_id": "E-1",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 115,
+   "normal_points": 8008,
+   "total_points": 8516
+  },
+  {
+   "chan_id": "E-10",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 0,
+   "fp": 2,
+   "fp_points": 374,
+   "normal_points": 8183,
+   "total_points": 8505
+  },
+  {
+   "chan_id": "E-11",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 322,
+   "normal_points": 8219,
+   "total_points": 8514
+  },
+  {
+   "chan_id": "E-12",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 1,
+   "fp": 1,
+   "fp_points": 225,
+   "normal_points": 7929,
+   "total_points": 8512
+  },
+  {
+   "chan_id": "E-13",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 2,
+   "fp": 3,
+   "fp_points": 294,
+   "normal_points": 8376,
+   "total_points": 8640
+  },
+  {
+   "chan_id": "E-2",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7134,
+   "total_points": 8532
+  },
+  {
+   "chan_id": "E-3",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 5094,
+   "total_points": 8307
+  },
+  {
+   "chan_id": "E-4",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 166,
+   "normal_points": 5542,
+   "total_points": 8354
+  },
+  {
+   "chan_id": "E-5",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 183,
+   "normal_points": 7973,
+   "total_points": 8294
+  },
+  {
+   "chan_id": "E-6",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 109,
+   "normal_points": 8234,
+   "total_points": 8300
+  },
+  {
+   "chan_id": "E-7",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 60,
+   "normal_points": 8029,
+   "total_points": 8310
+  },
+  {
+   "chan_id": "E-8",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7909,
+   "total_points": 8532
+  },
+  {
+   "chan_id": "E-9",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7951,
+   "total_points": 8302
+  },
+  {
+   "chan_id": "F-1",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 2,
+   "fp_points": 335,
+   "normal_points": 8483,
+   "total_points": 8584
+  },
+  {
+   "chan_id": "F-2",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 333,
+   "normal_points": 5669,
+   "total_points": 8626
+  },
+  {
+   "chan_id": "F-3",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 8335,
+   "total_points": 8376
+  },
+  {
+   "chan_id": "F-4",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 498,
+   "normal_points": 3351,
+   "total_points": 3422
+  },
+  {
+   "chan_id": "F-5",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 90,
+   "normal_points": 3771,
+   "total_points": 3922
+  },
+  {
+   "chan_id": "F-7",
+   "spacecraft": "MSL",
+   "tp": 2,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 197,
+   "normal_points": 4631,
+   "total_points": 5054
+  },
+  {
+   "chan_id": "F-8",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 2,
+   "fp_points": 203,
+   "normal_points": 1950,
+   "total_points": 2487
+  },
+  {
+   "chan_id": "G-1",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 2,
+   "fp_points": 304,
+   "normal_points": 8348,
+   "total_points": 8469
+  },
+  {
+   "chan_id": "G-2",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7320,
+   "total_points": 7361
+  },
+  {
+   "chan_id": "G-3",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7856,
+   "total_points": 7907
+  },
+  {
+   "chan_id": "G-4",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 135,
+   "normal_points": 7601,
+   "total_points": 7632
+  },
+  {
+   "chan_id": "G-6",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 74,
+   "normal_points": 8539,
+   "total_points": 8640
+  },
+  {
+   "chan_id": "G-7",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 1,
+   "fp": 1,
+   "fp_points": 308,
+   "normal_points": 7761,
+   "total_points": 8029
+  },
+  {
+   "chan_id": "M-1",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 1136,
+   "total_points": 2277
+  },
+  {
+   "chan_id": "M-2",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 70,
+   "normal_points": 1136,
+   "total_points": 2277
+  },
+  {
+   "chan_id": "M-3",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 1876,
+   "total_points": 2127
+  },
+  {
+   "chan_id": "M-4",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 1,
+   "fp_points": 31,
+   "normal_points": 1787,
+   "total_points": 2038
+  },
+  {
+   "chan_id": "M-5",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 2,
+   "fp_points": 192,
+   "normal_points": 2002,
+   "total_points": 2303
+  },
+  {
+   "chan_id": "M-6",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 228,
+   "normal_points": 1868,
+   "total_points": 2049
+  },
+  {
+   "chan_id": "M-7",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 183,
+   "normal_points": 2055,
+   "total_points": 2156
+  },
+  {
+   "chan_id": "P-1",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 3,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7754,
+   "total_points": 8505
+  },
+  {
+   "chan_id": "P-10",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 289,
+   "normal_points": 5969,
+   "total_points": 6100
+  },
+  {
+   "chan_id": "P-11",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 1,
+   "fp": 1,
+   "fp_points": 132,
+   "normal_points": 3307,
+   "total_points": 3535
+  },
+  {
+   "chan_id": "P-14",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 244,
+   "normal_points": 5919,
+   "total_points": 6100
+  },
+  {
+   "chan_id": "P-15",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 329,
+   "normal_points": 2835,
+   "total_points": 2856
+  },
+  {
+   "chan_id": "P-2",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 6933,
+   "total_points": 8209
+  },
+  {
+   "chan_id": "P-3",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7157,
+   "total_points": 8493
+  },
+  {
+   "chan_id": "P-4",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 110,
+   "normal_points": 7340,
+   "total_points": 7783
+  },
+  {
+   "chan_id": "P-7",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 6420,
+   "total_points": 8071
+  },
+  {
+   "chan_id": "R-1",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 7163,
+   "total_points": 7244
+  },
+  {
+   "chan_id": "S-1",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 6883,
+   "total_points": 7331
+  },
+  {
+   "chan_id": "S-2",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 136,
+   "normal_points": 1816,
+   "total_points": 1827
+  },
+  {
+   "chan_id": "T-1",
+   "spacecraft": "SMAP",
+   "tp": 1,
+   "fn": 1,
+   "fp": 1,
+   "fp_points": 302,
+   "normal_points": 7076,
+   "total_points": 8612
+  },
+  {
+   "chan_id": "T-12",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 118,
+   "normal_points": 2309,
+   "total_points": 2430
+  },
+  {
+   "chan_id": "T-13",
+   "spacecraft": "MSL",
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 258,
+   "normal_points": 2178,
+   "total_points": 2430
+  },
+  {
+   "chan_id": "T-2",
+   "spacecraft": "SMAP",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 6840,
+   "total_points": 8625
+  },
+  {
+   "chan_id": "T-3",
+   "spacecraft": "SMAP",
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 152,
+   "normal_points": 8395,
+   "total_points": 8579
+  },
+  {
+   "chan_id": "T-4",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 1,
+   "fp": 0,
+   "fp_points": 0,
+   "normal_points": 2148,
+   "total_points": 2217
+  },
+  {
+   "chan_id": "T-5",
+   "spacecraft": "MSL",
+   "tp": 1,
+   "fn": 0,
+   "fp": 0,
+   "fp_points": 151,
+   "normal_points": 2192,
+   "total_points": 2218
+  },
+  {
+   "chan_id": "T-8",
+   "spacecraft": "MSL",
+   "tp": 0,
+   "fn": 2,
+   "fp": 2,
+   "fp_points": 52,
+   "normal_points": 1417,
+   "total_points": 1519
+  },
+  {
+   "chan_id": "T-9",
+   "spacecraft": "MSL",
+   "tp": 2,
+   "fn": 0,
+   "fp": 1,
+   "fp_points": 238,
+   "normal_points": 984,
+   "total_points": 1096
+  }
+ ]
+}

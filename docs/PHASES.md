@@ -119,7 +119,10 @@ Two ADRs, a results table (per-candidate P/R/F1/FPR and training time), and froz
 
 **Goal:** a working detection core. It replays real telemetry, scores it with the chosen model, logs detections, and reports real accuracy numbers.
 
-### Status — code complete, baseline report pending (2026-10-11)
+### Status — done (2026-10-19)
+- **Baseline accuracy on all 81 labelled channels** ([docs/results/phase2_baseline.md](results/phase2_baseline.md)): precision 0.683, recall 0.683, F1 0.683, point false-positive rate 2.2% (71 anomalies found, 33 missed, 33 false alarms). SMAP: F1 0.711 (54 channels). MSL: F1 0.630 (27 channels). This is lower than the Phase 1 spike's 0.79, as ADR 001 warned: that number was optimistic because the final variant was picked using the same held-out channels. 0.683 is the honest figure.
+
+### Earlier status — code complete, baseline report pending (2026-10-11)
 - Pipeline built and tested: `ingest.py` (ReplaySource, Normaliser, Windower, REQ-6 gap repair), `lstm.py` + `train.py` (the Phase 1 ADR-001 model, resumable training CLI), `detect.py` (StreamingThreshold — an incremental version of the spike's dynamic threshold, decided in 70-point steps and never revising a committed decision), `lifecycle.py` (all 19 transitions), `session.py` (MonitoringSession orchestrator), `app/evaluation/` (metrics + the baseline report CLI), `/api/sessions`, `/api/detections`, and a `/evaluation` page. 127 backend tests pass (103 before this status + the ones added with it), lint is clean, the web app builds.
 - **Verified end to end** on the one channel trained so far (A-1): a real `MonitoringSession` replayed SMAP's test split through the real `LstmDetector` and wrote through to the real database via the FastAPI-shaped code path (`app/api/detections` reads it back).
 - **Training is still running.** 1 of 81 channels done; the laptop has been running roughly 10-20x slower than the Phase 1 benchmark. The cause: a Selenium IDE window left open since 23 Sept (Exp 9) had accumulated about 90 hours of CPU time and was still active, alongside several Chrome windows — not a bug in this phase's code. Resolving that and re-running `python -m app.pipeline.train` (resumable; already-trained channels are skipped) is the remaining step before the baseline report can be generated.
@@ -148,7 +151,7 @@ Two ADRs, a results table (per-candidate P/R/F1/FPR and training time), and froz
 
 **Evaluation (REQ-5)**
 - [x] `evaluation/metrics.py`: precision, recall, F1, FPR against the labels. Write a CLI that emits a Markdown/JSON report per model.
-- [ ] Commit the first baseline accuracy report to `docs/results/`.
+- [x] Commit the first baseline accuracy report to `docs/results/`.
 
 **Minimal UI hook**
 - [x] `GET /api/detections`, plus a simple `/evaluation` page listing detections and the metrics.
