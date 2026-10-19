@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Alert, AlertStatus, Satellite
+from app.pipeline.explain.severity import risk_label
 
 
 @dataclass
@@ -54,7 +55,10 @@ def rank_satellites(db: Session) -> list[SatelliteRanking]:
                 satellite_id=satellite.satellite_id,
                 satellite_name=satellite.name,
                 risk_level=alert.risk_level,
-                severity_level=alert.detection.severity_level,
+                # The alert's current band, not its first detection's: an episode's
+                # risk_level only escalates, so the opening detection's label goes
+                # stale (it read LOW next to risk 10).
+                severity_level=risk_label(alert.risk_level),
                 status=alert.status,
                 alert_id=alert.alert_id,
                 last_detection_at=alert.detection.timestamp,

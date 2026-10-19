@@ -86,3 +86,20 @@ def test_rank_satellites_with_no_alerts_at_all_ranks_last(db_session):
     rows = rank_satellites(db_session)
     assert len(rows) == 5
     assert all(r.risk_level is None for r in rows)
+
+
+def test_ranking_label_follows_the_escalated_risk_level_not_the_first_detection(db_session):
+    """An episode opens with a LOW detection and escalates to risk 10: the ranking must
+    say CRITICAL (the globe and fleet list colour by this), not the stale LOW."""
+    from datetime import datetime, timezone
+
+    db_session.query(Alert).delete()
+    db_session.query(Detection).delete()
+    db_session.commit()
+    t = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    add_detection_and_alert(db_session, "DET-Y1", "SAT-002", "ALT-Y1", 10, AlertStatus.ALERT_RAISED, t)
+    db_session.get(Detection, "DET-Y1").severity_level = "LOW"
+    db_session.commit()
+
+    sat2 = next(r for r in rank_satellites(db_session) if r.satellite_id == "SAT-002")
+    assert (sat2.risk_level, sat2.severity_level) == (10, "CRITICAL")
