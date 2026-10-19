@@ -1,3 +1,4 @@
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
@@ -102,6 +103,25 @@ def list_satellite_channels(
     ]
 
 
+def downsample_min_max(series: np.ndarray, lo: int, hi: int, max_points: int) -> list[int]:
+    """Indices into series[lo:hi], at most max_points of them, keeping each bucket's
+    minimum and maximum in index order. Plain striding (every k-th point) drops short
+    spikes, and a short spike is often exactly the anomaly the chart is there to show."""
+    n = hi - lo
+    if n <= max_points:
+        return list(range(lo, hi))
+    buckets = max_points // 2
+    edges = np.linspace(lo, hi, buckets + 1).astype(int)
+    indices: list[int] = []
+    for start, end in zip(edges[:-1], edges[1:], strict=True):
+        if end <= start:
+            continue
+        chunk = series[start:end]
+        pair = sorted({start + int(np.argmin(chunk)), start + int(np.argmax(chunk))})
+        indices.extend(pair)
+    return indices
+
+
 @router.get("/satellites/{satellite_id}/telemetry", response_model=TelemetrySeriesOut)
 def get_satellite_telemetry(
     satellite_id: str,
@@ -123,8 +143,7 @@ def get_satellite_telemetry(
     total_points = len(series)
     hi = min(to, total_points) if to is not None else total_points
     lo = min(frm, hi)
-    stride = max(1, (hi - lo) // MAX_POINTS)
-    indices = list(range(lo, hi, stride))
+    indices = downsample_min_max(series, lo, hi, MAX_POINTS)
     points = [float(series[i]) for i in indices]
 
     ranges = db.execute(

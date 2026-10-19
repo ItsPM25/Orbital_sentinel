@@ -185,3 +185,22 @@ def test_channels_requires_login(client):
 def test_channels_unknown_satellite_is_404(client):
     login(client, ANALYST)
     assert client.get("/api/satellites/SAT-999/channels").status_code == 404
+
+
+def test_downsampling_keeps_short_spikes():
+    """A one-sample spike in 10,000 points must survive downsampling to 2,000: plain
+    striding (every 5th point) dropped it, and with it the anomaly the chart should show."""
+    from app.api.satellites import downsample_min_max
+
+    series = np.ones(10_000, dtype=np.float32)
+    series[4_321] = -1.0
+    indices = downsample_min_max(series, 0, len(series), 2000)
+    assert len(indices) <= 2000
+    assert indices == sorted(indices)
+    assert 4_321 in indices
+
+
+def test_downsampling_returns_every_point_when_under_the_cap():
+    from app.api.satellites import downsample_min_max
+
+    assert downsample_min_max(np.arange(50, dtype=np.float32), 10, 40, 2000) == list(range(10, 40))
