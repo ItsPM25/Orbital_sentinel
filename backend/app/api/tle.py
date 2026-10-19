@@ -13,7 +13,7 @@ from app.core.db import get_db
 from app.core.security import get_current_user
 from app.models import Satellite, User
 from app.schemas.tle import TleOut
-from app.tracking.celestrak import get_tle_data
+from app.tracking.celestrak import apply_fetched, fetch_due, tle_payload
 
 router = APIRouter(tags=["tle"])
 
@@ -29,12 +29,9 @@ def list_tle(db: Session = Depends(get_db), _user: User = Depends(get_current_us
     satellites = db.scalars(
         select(Satellite).where(Satellite.norad_id.is_not(None)).order_by(Satellite.satellite_id)
     ).all()
-    result = []
-    for sat in satellites:
-        data = get_tle_data(sat, db)
-        result.append(TleOut(**data))
-    try:
+    # Network first, with no write open; then one short write (see app/tracking/celestrak.py).
+    fetched = fetch_due(satellites)
+    changed = [s for s in satellites if apply_fetched(s, fetched)]
+    if changed:
         db.commit()
-    except Exception:  # noqa: BLE001
-        db.rollback()
-    return result
+    return [TleOut(**tle_payload(s)) for s in satellites]

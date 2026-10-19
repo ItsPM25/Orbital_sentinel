@@ -41,7 +41,10 @@ def utcnow() -> datetime:
 def make_engine(url: str, **kwargs) -> Engine:
     is_sqlite = url.startswith("sqlite")
     if is_sqlite:
-        kwargs.setdefault("connect_args", {"check_same_thread": False})
+        # timeout: how long a writer waits for SQLite's lock before failing with
+        # "database is locked" (default 5s). Monitoring sessions and API requests
+        # write concurrently, so give short overlapping writes room to queue.
+        kwargs.setdefault("connect_args", {"check_same_thread": False, "timeout": 15})
     engine = create_engine(url, **kwargs)
 
     if is_sqlite:

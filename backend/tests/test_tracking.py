@@ -27,8 +27,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.tracking.celestrak import _is_stale, get_tle_data
+from app.tracking import celestrak
+from app.tracking.celestrak import _is_stale, fetch_due, get_tle_data
 from app.tracking.snapshot_tles import SNAPSHOT
+
+
+@pytest.fixture(autouse=True)
+def _clear_failure_backoff():
+    # Module-level backoff state; don't let one test's simulated outage leak into the next.
+    celestrak._last_failure.clear()
+    yield
+    celestrak._last_failure.clear()
+
 
 # ---------------------------------------------------------------------------
 # SMAP reference TLE (from the bundled snapshot, captured Oct 2026).
@@ -208,3 +218,41 @@ def test_req12_tle_api_shape(client):
     item = data[0]
     for key in ("satelliteId", "noradId", "tleLine1", "tleLine2", "stale"):
         assert key in item, f"Missing key: {key}"
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for two bugs found by running the app on a network where
+# CelesTrak was unreachable: each /api/tle call waited out 5 sequential
+# timeouts (~56s, longer than the web proxy waits), and held a SQLite write
+# open meanwhile, which crashed a running MonitoringSession ("database is locked").
+# ---------------------------------------------------------------------------
+
+def test_failed_fetch_is_not_retried_during_backoff():
+    sat = _make_satellite(SMAP_NORAD)
+    with patch("app.tracking.celestrak.httpx.get", side_effect=Exception("network down")) as mock_get:
+        get_tle_data(sat, MagicMock())
+        get_tle_data(sat, MagicMock())
+    assert mock_get.call_count == 1  # second call skipped: still in backoff
+
+
+def test_offline_fetches_run_in_parallel_not_one_timeout_per_satellite():
+    sats = [_make_satellite(n) for n in (40376, 27424, 25994, 49260, 40697)]
+
+    def slow_failure(*_args, **_kwargs):
+        time.sleep(0.5)
+        raise Exception("handshake timed out")
+
+    with patch("app.tracking.celestrak.httpx.get", side_effect=slow_failure):
+        t0 = time.monotonic()
+        result = fetch_due(sats)
+        elapsed = time.monotonic() - t0
+
+    assert result == {}
+    assert elapsed < 1.5, f"5 failing fetches took {elapsed:.2f}s; sequential would be ~2.5s"
+
+
+def test_fetch_due_never_touches_the_database():
+    """The network step takes no session at all, so it cannot hold a write lock."""
+    import inspect
+
+    assert "db" not in inspect.signature(fetch_due).parameters
