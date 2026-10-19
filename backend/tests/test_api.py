@@ -111,3 +111,39 @@ def test_reset_restores_demo_alerts(client):
 
 def test_api_responses_are_not_cached(client):
     assert client.get("/api/health").headers["cache-control"] == "no-store"
+
+
+def test_reset_removes_alerts_written_by_monitoring(client, db_session):
+    """After a replay has raised its own alerts, reset leaves exactly the 8 demo alerts."""
+    from datetime import datetime, timezone
+
+    from app.models import Alert, AlertStatus, Detection, DetectionOutcome
+
+    db_session.add(
+        Detection(
+            detection_id="DET-REPLAY",
+            satellite_id="SAT-002",
+            model_id="MDL-DEMO-1",
+            timestamp=datetime(2015, 1, 31, tzinfo=timezone.utc),
+            anomaly_score=2.0,
+            severity_level="LOW",
+            persistence_count=3,
+            outcome=DetectionOutcome.CONFIRMED,
+        )
+    )
+    db_session.add(
+        Alert(
+            alert_id="ALT-REPLAY",
+            detection_id="DET-REPLAY",
+            risk_level=10,
+            created_at=datetime(2015, 1, 31, tzinfo=timezone.utc),
+            status=AlertStatus.ALERT_RAISED,
+        )
+    )
+    db_session.commit()
+    login(client, ANALYST)
+    assert len(client.get("/api/alerts").json()) == 9
+
+    client.get("/api/reset")
+    alert_ids = sorted(a["alertId"] for a in client.get("/api/alerts").json())
+    assert alert_ids == [f"ALT-00{i}" for i in range(1, 9)]
