@@ -117,6 +117,7 @@ export interface SessionStatus {
   modelId: string;
   running: boolean;
   counters: Record<string, number> | null;
+  lastError?: string | null;
 }
 
 export interface EvaluationMetrics {
