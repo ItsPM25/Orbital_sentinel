@@ -105,8 +105,6 @@ def test_windower_handles_a_channel_shorter_than_history():
 @pytest.fixture()
 def tiny_channel(tmp_path, monkeypatch):
     """A 1-feature channel with one short gap, small enough to replay in a couple of windows."""
-    import pandas as pd  # noqa: F401  (ensure pandas is importable in this env; unused otherwise)
-
     (tmp_path / "test").mkdir()
     (tmp_path / "train").mkdir()
     values = np.sin(np.linspace(0, 20, 220)).astype(np.float32)

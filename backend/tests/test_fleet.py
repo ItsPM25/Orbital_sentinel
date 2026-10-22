@@ -5,12 +5,21 @@ described this split, but nothing actually implemented it (import_dataset.py's
 DEFAULT_SATELLITE_FOR_SPACECRAFT only ever mapped all of SMAP to SAT-001 and
 all of MSL to SAT-002, leaving SAT-003/004/005 with zero channels)."""
 
+import pytest
+
+from app.core.settings import settings
 from app.pipeline.dataset import load_labels
 from app.pipeline.fleet import (
     MSL_SATELLITES,
     SMAP_SATELLITES,
     build_fleet_channel_map,
     telemetry_source_summary,
+)
+
+# The split is built from the dataset's labels, which are not in git (CI has no data/).
+pytestmark = pytest.mark.skipif(
+    not (settings.data_dir / "labeled_anomalies.csv").exists(),
+    reason="SMAP/MSL dataset not downloaded (run scripts/get_data)",
 )
 
 
