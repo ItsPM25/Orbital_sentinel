@@ -1,0 +1,21 @@
+Security drills, 2026-10-22 07:31:05 IST, API http://localhost:8000/api
+
+NFT-09 role enforcement
+PASS  analyst login (got 200)
+PASS  evaluator login (got 200)
+PASS  admin login (got 200)
+PASS  no cookie: POST /sessions (got 401)
+PASS  analyst: POST /sessions (got 403)
+PASS  evaluator: POST /sessions (got 403)
+PASS  analyst: GET /sessions (got 403)
+PASS  forged cookie: GET /alerts (got 401)
+PASS  wrong password (got 401)
+
+NFT-10 session cookie and secrets
+      Set-Cookie: set-cookie: os_session=<redacted>; HttpOnly; Max-Age=28800; Path=/; SameSite=lax
+PASS  cookie is HttpOnly (got yes)
+PASS  cookie is SameSite=Lax (got yes)
+PASS  no argon2 hash in login, me, alerts, satellites, ranking, sessions (got 0)
+PASS  no password field in those responses (got 0)
+
+Passed 13, failed 0
