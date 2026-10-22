@@ -1,6 +1,6 @@
 # ADR 003 — Persistence threshold and severity constants (closes TBD-1)
 
-**Status:** preliminary — based on the channels trained so far; to be refreshed once all 81 channels have trained weights (Phase 2's baseline report has the same caveat). See the note at the end.
+**Status:** accepted, 22 Oct 2026. Measured on all 81 labelled channels with `MDL-LSTM-100-80`.
 
 **Phase:** 3 · **Requirements:** REQ-8, REQ-9, REQ-11
 
@@ -10,7 +10,7 @@
 
 | Constant | Value | Meaning |
 |---|---|---|
-| `persistence_threshold` (N) | *(filled in below)* | consecutive anomalous windows needed before an alert is raised |
+| `persistence_threshold` (N) | 2 | consecutive anomalous windows needed before an alert is raised |
 | `SCORE_CAP` | 3.0 | a satellite score of 3× the detection threshold or more counts as maximally severe on its own |
 | `PERSISTENCE_SATURATE` | 5 | 5 consecutive confirmed windows or more counts as maximally persistent on its own |
 | `severity_threshold` (default, per satellite) | 0.5 | the sensitivity knob `severity_index` is divided by before banding; lower = escalates sooner |
@@ -32,7 +32,25 @@ python -m app.evaluation.reports --model-id MDL-LSTM-100-80 --sweep 1 2 3 5 8 \
 
 See [docs/results/phase3_persistence_comparison.md](../results/phase3_persistence_comparison.md) for the full tables. Summary:
 
-*(filled in from the sweep output once available — see the note below)*
+Run on 22 Oct 2026 (81 channels, about 90 s on the laptop because inference is shared between the sweep and the comparison).
+
+**Tuning half.** N = 2 gave the best F1 (0.509). It kept the same 14 of 20 anomalies as N = 1 and cut false alarms from 26 to 21. From N = 3 upwards recall collapses (6 of 20 at N = 3, none at N = 5), because many labelled anomalies in this dataset only last two or three 70-step windows.
+
+**Reporting half (REQ-11), held out from tuning:**
+
+| | Found | Missed | False alarms | Precision | Recall | F1 | Point FPR |
+|---|---|---|---|---|---|---|---|
+| Without filter (N = 1) | 56 | 28 | 12 | 0.824 | 0.667 | 0.737 | 3.23% |
+| With filter (N = 2) | 53 | 31 | 13 | 0.803 | 0.631 | 0.707 | 2.83% |
+
+What this shows, plainly:
+
+- The filter lowers the share of normal points that get flagged from 3.23% to 2.83%, about 12% fewer falsely flagged points.
+- It does **not** lower the number of false-alarm *events*: 12 without, 13 with. Removing single windows from inside a longer flagged run can split one run into two, which the event metric counts twice.
+- It costs 3 real anomalies (recall 0.667 to 0.631).
+- So on this dataset the persistence filter is a small, mixed trade. Its main value in the live system is suppressing one-window blips so that an alert is not raised by a single noisy window, which the point FPR reflects, rather than a large accuracy gain.
+
+The two halves are unbalanced: only 20 labelled anomalies fall in the tuning halves and 84 in the reporting halves, because anomalies in the NASA test splits sit mostly towards the end of each channel. N was therefore chosen on a small sample, which is a limitation of this result.
 
 ## Severity formula sanity check
 
@@ -40,10 +58,5 @@ See [docs/results/phase3_persistence_comparison.md](../results/phase3_persistenc
 
 ## Consequences
 
-- `app/seed.py`'s default `MONITORING_CONFIG.persistence_threshold` is updated to match the chosen N.
+- `app/seed.py`'s default `MONITORING_CONFIG.persistence_threshold` is now 2 (was 3). A database seeded earlier keeps its old rows until an administrator saves a new config on the Admin page.
 - The with/without comparison in `docs/results/phase3_persistence_comparison.md` is this project's REQ-11 headline result; it is quoted, with its limitations, in the final course report.
-- If the chosen N changes materially once all 81 channels are trained, this ADR and the seeded default are updated and the change is noted in `docs/PHASES.md`.
-
-## Note on preliminary status
-
-This ADR was written while Phase 2's 81-channel training run was still in progress (see `docs/PHASES.md`'s Phase 2 status). The numbers above come from whichever channels had trained weights at the time; the full picture is more reliable once every labelled channel is included. Re-run the command above after training finishes and update this file and the linked results.

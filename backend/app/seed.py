@@ -116,7 +116,7 @@ def seed_reference(db: Session) -> None:
                     config_id=f"CFG-{satellite_id[4:]}",
                     satellite_id=satellite_id,
                     set_by_user_id="USR-002",
-                    persistence_threshold=3,
+                    persistence_threshold=2,  # chosen by the REQ-11 sweep, ADR 003
                     severity_threshold=0.5,
                 )
             )
