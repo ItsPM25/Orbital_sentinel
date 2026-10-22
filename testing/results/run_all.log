@@ -1,0 +1,37 @@
+== load start 2026-10-22 06:39:12 args: -Jusers=50 -Jrampup=10 -Jloops=10
+== load end   2026-10-22 06:41:31 exit 0
+summary =   3500 in 00:01:59 =   29.4/s Avg:  1608 Min:     8 Max: 17321 Err:     0 (0.00%)
+== readonly start 2026-10-22 06:41:31 args: -Jusers=0 -Jro_users=50 -Jrampup=10 -Jro_loops=20
+== readonly start 2026-10-22 06:43:11 args: -Jusers=0 -Jro_users=50 -Jrampup=10 -Jro_loops=20
+== readonly end   2026-10-22 06:45:19 exit 0
+summary =   5050 in 00:02:03 =   41.1/s Avg:    85 Min:     9 Max:  1120 Err:     0 (0.00%)
+== stress100 start 2026-10-22 06:45:20 args: -Jusers=100 -Jrampup=30 -Jloops=5
+== stress100 end   2026-10-22 07:03:25 exit 0
+summary =   3500 in 00:18:00 =    3.2/s Avg: 25240 Min:    14 Max: 30613 Err:  2919 (83.40%)
+== stress200 start 2026-10-22 07:03:56 args: -Jusers=200 -Jrampup=30 -Jloops=3
+== soak start 2026-10-22 07:07:36 args: -Jusers=0 -Jro_users=20 -Jrampup=10 -Jro_loops=-1 -Jro_duration=600
+== soak end   2026-10-22 07:17:43 exit 0
+summary =  11574 in 00:10:00 =   19.3/s Avg:    31 Min:     6 Max:  7413 Err:     0 (0.00%)
+== spike start 2026-10-22 07:17:52 args: -Jusers=200 -Jrampup=1 -Jloops=1
+== spike end   2026-10-22 07:21:32 exit 0
+summary =   1400 in 00:03:35 =    6.5/s Avg: 29960 Min:  1003 Max: 31241 Err:  1377 (98.36%)
+all done 2026-10-22 07:22:03
+== retest after O-03 fix (login releases DB connection before argon2)
+== stress100 start 2026-10-22 07:25:03 args: -Jusers=100 -Jrampup=30 -Jloops=5
+== stress100 end   2026-10-22 07:28:21 exit 0
+summary =   1709 in 00:03:13 =    8.9/s Avg: 10394 Min:     9 Max: 30621 Err:   999 (58.46%)
+== spike start 2026-10-22 07:28:22 args: -Jusers=200 -Jrampup=1 -Jloops=1
+== spike end   2026-10-22 07:28:34 exit 0
+summary =   1400 in 00:00:06 =  221.7/s Avg:   742 Min:    94 Max:  1056 Err:  1400 (100.00%)
+all done 2026-10-22 07:28:34
+== stress100 stopped 2026-10-22 07:28 by hand: first fix (connection released before argon2) not enough; 1192 requests, 40.44% errors, last 30 s all failing
+== retest after O-03 fix 2 (argon2 on its own CapacityLimiter, async login)
+== stress100 start 2026-10-22 07:29:13 args: -Jusers=100 -Jrampup=30 -Jloops=5
+== stress100 stopped 2026-10-22 07:31 by hand: fix 2 (argon2 on its own limiter) also stalled (QueuePool timeouts, /api/health unresponsive). Both fixes reverted; O-03 left open.
+== stress100 end   2026-10-22 07:30:39 exit 0
+grep: results/stress100.log: No such file or directory
+== spike start 2026-10-22 07:30:39 args: -Jusers=200 -Jrampup=1 -Jloops=1
+== spike end   2026-10-22 07:30:50 exit 0
+summary =   1400 in 00:00:06 =  246.6/s Avg:   660 Min:    82 Max:  1066 Err:  1400 (100.00%)
+all done 2026-10-22 07:30:51
+== note 07:33: the spike that ran after fix 2 was stopped hit a stopped backend (100% connection errors); invalid, kept in o03_fix_attempts/fix2_spike_backend_down_INVALID. Reported stress100/ and spike/ are the 06:45 and 07:17 runs on the original code.

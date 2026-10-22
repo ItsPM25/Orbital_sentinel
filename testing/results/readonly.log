@@ -1,0 +1,19 @@
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+Creating summariser <summary>
+Created the tree successfully using OrbitalSentinel.jmx
+Starting standalone test @ 2026 Oct 22 06:43:13 IST (1792631593864)
+Waiting for possible Shutdown/StopTestNow/HeapDump/ThreadDump message on port 4445
+summary +    484 in 00:00:16 =   30.3/s Avg:   104 Min:     9 Max:  1009 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary +   1336 in 00:00:30 =   44.5/s Avg:   124 Min:    10 Max:  1120 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1820 in 00:00:46 =   39.6/s Avg:   119 Min:     9 Max:  1120 Err:     0 (0.00%)
+summary +   1402 in 00:00:30 =   46.7/s Avg:    70 Min:    10 Max:  1079 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   3222 in 00:01:16 =   42.4/s Avg:    97 Min:     9 Max:  1120 Err:     0 (0.00%)
+summary +   1393 in 00:00:30 =   46.5/s Avg:    70 Min:    10 Max:   836 Err:     0 (0.00%) Active: 49 Started: 50 Finished: 1
+summary =   4615 in 00:01:46 =   43.6/s Avg:    89 Min:     9 Max:  1120 Err:     0 (0.00%)
+summary +    435 in 00:00:17 =   25.9/s Avg:    37 Min:    10 Max:   313 Err:     0 (0.00%) Active: 0 Started: 50 Finished: 50
+summary =   5050 in 00:02:03 =   41.1/s Avg:    85 Min:     9 Max:  1120 Err:     0 (0.00%)
+Tidying up ...    @ 2026 Oct 22 06:45:16 IST (1792631716816)
+... end of run
