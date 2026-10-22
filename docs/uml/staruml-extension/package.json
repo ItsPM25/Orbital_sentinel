@@ -1,0 +1,9 @@
+{
+  "name": "orbital-sentinel-oo",
+  "title": "Orbital Sentinel OO Diagrams",
+  "description": "Builds the Exp 6 (use case, class) and Exp 8 (package, component, deployment) diagrams for Orbital Sentinel.",
+  "version": "1.0.0",
+  "keywords": ["uml"],
+  "license": "MIT",
+  "engines": { "staruml": ">=6.0.0" }
+}
