@@ -32,3 +32,8 @@ ml/spike/results/errors/
 
 # Claude Code session-local tooling state
 .claude/
+
+# Local server logs and abandoned test runs
+web/.next-start.log
+testing/results/backend_uvicorn*.log
+testing/results/o03_fix_attempts/
