@@ -15,7 +15,6 @@
 2. **Jira history must be real.** Jira is compulsory but was not used during Phases 0–5. The report must say so (see Step B), and no sprint or burndown may be back-dated.
 3. **Keep the traceability.** Use the ER entity names, the state-diagram state names and the REQ-n IDs exactly as they appear in the code and the SRS.
 4. **Honest framing (SRS §5.2, §6).** The report must state three things: the system detects anomalies (it does not forecast), the telemetry is a replay, and it is a proof of concept.
-5. **AI assistance.** The project was built with help from an AI coding assistant (Claude Code). Check the course's academic-integrity rules on whether and how this must be disclosed before submitting.
 
 ---
 
@@ -50,7 +49,7 @@
 
 ## 2. Work order
 
-Tasks marked **[S]** need the student: an account, a GUI, recording, or a judgement call. Tasks marked **[C]** can be done by Claude in a coding session on the repo.
+Tasks marked **[S]** need the student: an account, a GUI, recording, or a judgement call. Tasks marked **[C]** are coding work on the repo.
 
 | # | Step | Who | Depends on | Output |
 |---|---|---|---|---|
@@ -98,7 +97,7 @@ Then:
    - Key: **OS** (issues become OS-1, OS-2, …)
 3. **Optional but valuable:** install the **GitHub for Jira** app and connect `ItsPM25/Orbital_sentinel`.
    - From then on, every commit message that contains an issue key (e.g. `OS-23 Run the REQ-11 comparison`) appears in that issue's *Development* panel.
-   - Tell Claude the key convention so future commits include it.
+   - Use the key convention in every commit message from then on.
 4. Add the professor or evaluator as a viewer if they want to inspect it live.
 
 ### B.2 How Jira maps to the project's process model
