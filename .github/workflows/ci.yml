@@ -23,6 +23,8 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
+      # The pipeline imports torch, so the API cannot even load without it (CPU build only).
+      - run: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
       - run: ruff check .
       # Dataset tests skip themselves when data/ is absent.
       - run: pytest -q
