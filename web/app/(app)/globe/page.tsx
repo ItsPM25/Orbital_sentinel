@@ -152,7 +152,9 @@ function ClockBar({ now, speed, onSpeed, stale }: { now: () => Date; speed: Spee
   return (
     <div className="pointer-events-none absolute top-0 left-0 flex flex-wrap items-center gap-3 p-4">
       <div className="pointer-events-auto rounded-md border bg-card/90 px-3 py-2">
-        <p className="text-[12px] text-muted-foreground">{speed === 1 ? "Live, UTC" : `Simulated at ${speed}×, UTC`}</p>
+        <p className="text-[12px] text-muted-foreground" id="simMode">
+          {speed === 1 ? "Live, UTC" : `Simulated at ${speed}×, UTC`}
+        </p>
         <p className="num text-[15px] font-medium" id="simClock">
           {time ? `${formatUtc(time.toISOString()).slice(0, 10)} ${formatUtcTime(time)}` : " "}
         </p>
