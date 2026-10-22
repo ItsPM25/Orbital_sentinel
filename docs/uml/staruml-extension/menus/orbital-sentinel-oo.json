@@ -1,0 +1,12 @@
+{
+  "menu": [
+    {
+      "id": "tools",
+      "submenu": [
+        { "type": "separator" },
+        { "label": "Orbital Sentinel: Exp 6 (Use Case + Class)", "id": "tools.orbital-exp6", "command": "orbital-oo:exp6" },
+        { "label": "Orbital Sentinel: Exp 8 (Package + Component + Deployment)", "id": "tools.orbital-exp8", "command": "orbital-oo:exp8" }
+      ]
+    }
+  ]
+}
